@@ -7,7 +7,10 @@ import {
   Store,
 } from "relay-runtime";
 
-const HTTP_ENDPOINT = "https://gql.brightsideserve.com/query";
+const PROD = "https://gql.brightsideserve.com/query";
+const jakesIp = "http://192.168.86.29:8080/query";
+
+const HTTP_ENDPOINT = jakesIp;
 
 const getToken = async () => await SecureStore.getItemAsync("token");
 
