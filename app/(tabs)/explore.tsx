@@ -1,125 +1,69 @@
-import { Image } from "expo-image";
-import { Platform, StyleSheet } from "react-native";
+import { Button, StyleSheet, Text, TextInput, View } from "react-native";
 
-import { ExternalLink } from "@/components/external-link";
-import ParallaxScrollView from "@/components/parallax-scroll-view";
-import { ThemedText } from "@/components/themed-text";
-import { ThemedView } from "@/components/themed-view";
-import { Collapsible } from "@/components/ui/collapsible";
-import { IconSymbol } from "@/components/ui/icon-symbol";
-import { Fonts } from "@/constants/theme";
+import { exploreMutation } from "@/gql/exploreMutation.graphql";
 import { exploreQuery } from "@/gql/exploreQuery.graphql";
-import { graphql, useLazyLoadQuery } from "react-relay";
+import { useState } from "react";
+import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  fetchQuery,
+  graphql,
+  useLazyLoadQuery,
+  useMutation,
+  useRelayEnvironment,
+} from "react-relay";
+
+const query = graphql`
+  query exploreQuery {
+    users {
+      id
+      name
+    }
+  }
+`;
 
 export default function TabTwoScreen() {
-  const data = useLazyLoadQuery<exploreQuery>(
-    graphql`
-      query exploreQuery($num1: Int!, $num2: Int!) {
-        addNumbers(a: $num1, b: $num2)
-      }
-    `,
-    { num1: 5, num2: 7 }
-  );
+  const environment = useRelayEnvironment();
+  const [name, setName] = useState("");
+
+  const data = useLazyLoadQuery<exploreQuery>(query, {});
   console.log("🚀 ~ TabTwoScreen ~ data:", data);
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: "#D0D0D0", dark: "#353636" }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
+
+  const [createUser, isLoading] = useMutation<exploreMutation>(graphql`
+    mutation exploreMutation($name: String!) {
+      createUser(name: $name) {
+        id
       }
-    >
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText
-          type="title"
-          style={{
-            fontFamily: Fonts.rounded,
-          }}
-        >
-          Explore
-        </ThemedText>
-      </ThemedView>
-      <ThemedText>
-        This app includes example code to help you get started.
-      </ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{" "}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText>{" "}
-          and{" "}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in{" "}
-          <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{" "}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the
-          web version, press <ThemedText type="defaultSemiBold">w</ThemedText>{" "}
-          in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the{" "}
-          <ThemedText type="defaultSemiBold">@2x</ThemedText> and{" "}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to
-          provide files for different screen densities
-        </ThemedText>
-        <Image
-          source={require("@/assets/images/react-logo.png")}
-          style={{ width: 100, height: 100, alignSelf: "center" }}
+    }
+  `);
+
+  const onSubmit = () => {
+    createUser({
+      variables: {
+        name,
+      },
+      onCompleted: () => {
+        setName("");
+        fetchQuery(environment, query, {}).toPromise(); //! Need this to update the frontend after fetching (.toPromise())
+      },
+    });
+  };
+
+  return (
+    <SafeAreaView>
+      <View style={{ marginTop: 25, gap: 5 }}>
+        {data.users.map((user) => (
+          <Text style={{ color: "white" }} key={user.id}>
+            {user.name}
+          </Text>
+        ))}
+        <TextInput
+          style={{ margin: 20, padding: 5, backgroundColor: "white" }}
+          onChangeText={setName}
+          value={name}
         />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{" "}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook
-          lets you inspect what the user&apos;s current color scheme is, and so
-          you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{" "}
-          <ThemedText type="defaultSemiBold">
-            components/HelloWave.tsx
-          </ThemedText>{" "}
-          component uses the powerful{" "}
-          <ThemedText type="defaultSemiBold" style={{ fontFamily: Fonts.mono }}>
-            react-native-reanimated
-          </ThemedText>{" "}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The{" "}
-              <ThemedText type="defaultSemiBold">
-                components/ParallaxScrollView.tsx
-              </ThemedText>{" "}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+        <Button onPress={onSubmit} title="Submit"></Button>
+      </View>
+    </SafeAreaView>
   );
 }
 

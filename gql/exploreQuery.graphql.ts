@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<4a0603195e3fac0de35a4b5d8c49bf17>>
+ * @generated SignedSource<<cbd64cd6a0dcc0c0d61b39689c23be6b>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -9,12 +9,12 @@
 // @ts-nocheck
 
 import { ConcreteRequest } from 'relay-runtime';
-export type exploreQuery$variables = {
-  num1: number;
-  num2: number;
-};
+export type exploreQuery$variables = Record<PropertyKey, never>;
 export type exploreQuery$data = {
-  readonly addNumbers: number;
+  readonly users: ReadonlyArray<{
+    readonly id: string;
+    readonly name: string;
+  }>;
 };
 export type exploreQuery = {
   response: exploreQuery$data;
@@ -24,64 +24,59 @@ export type exploreQuery = {
 const node: ConcreteRequest = (function(){
 var v0 = [
   {
-    "defaultValue": null,
-    "kind": "LocalArgument",
-    "name": "num1"
-  },
-  {
-    "defaultValue": null,
-    "kind": "LocalArgument",
-    "name": "num2"
-  }
-],
-v1 = [
-  {
     "alias": null,
-    "args": [
+    "args": null,
+    "concreteType": "User",
+    "kind": "LinkedField",
+    "name": "users",
+    "plural": true,
+    "selections": [
       {
-        "kind": "Variable",
-        "name": "a",
-        "variableName": "num1"
+        "alias": null,
+        "args": null,
+        "kind": "ScalarField",
+        "name": "id",
+        "storageKey": null
       },
       {
-        "kind": "Variable",
-        "name": "b",
-        "variableName": "num2"
+        "alias": null,
+        "args": null,
+        "kind": "ScalarField",
+        "name": "name",
+        "storageKey": null
       }
     ],
-    "kind": "ScalarField",
-    "name": "addNumbers",
     "storageKey": null
   }
 ];
 return {
   "fragment": {
-    "argumentDefinitions": (v0/*: any*/),
+    "argumentDefinitions": [],
     "kind": "Fragment",
     "metadata": null,
     "name": "exploreQuery",
-    "selections": (v1/*: any*/),
+    "selections": (v0/*: any*/),
     "type": "Query",
     "abstractKey": null
   },
   "kind": "Request",
   "operation": {
-    "argumentDefinitions": (v0/*: any*/),
+    "argumentDefinitions": [],
     "kind": "Operation",
     "name": "exploreQuery",
-    "selections": (v1/*: any*/)
+    "selections": (v0/*: any*/)
   },
   "params": {
-    "cacheID": "bdbc49f0624a80c46d896554c0b0a15c",
+    "cacheID": "30b44e2e18081128d03940318dc819a3",
     "id": null,
     "metadata": {},
     "name": "exploreQuery",
     "operationKind": "query",
-    "text": "query exploreQuery(\n  $num1: Int!\n  $num2: Int!\n) {\n  addNumbers(a: $num1, b: $num2)\n}\n"
+    "text": "query exploreQuery {\n  users {\n    id\n    name\n  }\n}\n"
   }
 };
 })();
 
-(node as any).hash = "aa7a945adcc6d4862b5ee647544cbf07";
+(node as any).hash = "972032e4a7372b584521a55ffb4c0196";
 
 export default node;
