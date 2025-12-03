@@ -20,19 +20,12 @@ directive @specifiedBy(
   url: String!
 ) on SCALAR
 
-type Mutation {
-  createUser(name: String!): User!
-}
-
 type Query {
-  hello: String!
-  me: User!
-  addNumbers(a: Int!, b: Int!): Int!
-  users: [User!]!
+  session: Session!
 }
 
-type User {
+type Session {
   id: ID!
-  name: String!
+  jwt: String!
 }
 

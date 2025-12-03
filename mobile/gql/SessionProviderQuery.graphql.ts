@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<1f1ae3152d81efd56d5f4fd8eee1558c>>
+ * @generated SignedSource<<73c645c36e18a8729c22152dc020d4b6>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -9,17 +9,16 @@
 // @ts-nocheck
 
 import { ConcreteRequest } from 'relay-runtime';
-export type TabsQuery$variables = Record<PropertyKey, never>;
-export type TabsQuery$data = {
-  readonly hello: string;
-  readonly me: {
+export type SessionProviderQuery$variables = Record<PropertyKey, never>;
+export type SessionProviderQuery$data = {
+  readonly session: {
     readonly id: string;
-    readonly name: string;
+    readonly jwt: string;
   };
 };
-export type TabsQuery = {
-  response: TabsQuery$data;
-  variables: TabsQuery$variables;
+export type SessionProviderQuery = {
+  response: SessionProviderQuery$data;
+  variables: SessionProviderQuery$variables;
 };
 
 const node: ConcreteRequest = (function(){
@@ -27,16 +26,9 @@ var v0 = [
   {
     "alias": null,
     "args": null,
-    "kind": "ScalarField",
-    "name": "hello",
-    "storageKey": null
-  },
-  {
-    "alias": null,
-    "args": null,
-    "concreteType": "User",
+    "concreteType": "Session",
     "kind": "LinkedField",
-    "name": "me",
+    "name": "session",
     "plural": false,
     "selections": [
       {
@@ -50,7 +42,7 @@ var v0 = [
         "alias": null,
         "args": null,
         "kind": "ScalarField",
-        "name": "name",
+        "name": "jwt",
         "storageKey": null
       }
     ],
@@ -62,7 +54,7 @@ return {
     "argumentDefinitions": [],
     "kind": "Fragment",
     "metadata": null,
-    "name": "TabsQuery",
+    "name": "SessionProviderQuery",
     "selections": (v0/*: any*/),
     "type": "Query",
     "abstractKey": null
@@ -71,20 +63,20 @@ return {
   "operation": {
     "argumentDefinitions": [],
     "kind": "Operation",
-    "name": "TabsQuery",
+    "name": "SessionProviderQuery",
     "selections": (v0/*: any*/)
   },
   "params": {
-    "cacheID": "2944dcfabcb90d298f30036aa71e7f0f",
+    "cacheID": "f608c3261bd48aebf2f4952b5fd2a5a3",
     "id": null,
     "metadata": {},
-    "name": "TabsQuery",
+    "name": "SessionProviderQuery",
     "operationKind": "query",
-    "text": "query TabsQuery {\n  hello\n  me {\n    id\n    name\n  }\n}\n"
+    "text": "query SessionProviderQuery {\n  session {\n    id\n    jwt\n  }\n}\n"
   }
 };
 })();
 
-(node as any).hash = "1ae48f713648131565cf4467a540d5af";
+(node as any).hash = "9b2fccd53e39266011e08d0572a17af6";
 
 export default node;

@@ -1,4 +1,7 @@
+import { SessionProviderQuery } from "@/gql/SessionProviderQuery.graphql";
+import { SplashScreen } from "expo-router";
 import React, { ReactNode, useMemo } from "react";
+import { graphql, useLazyLoadQuery } from "react-relay";
 import SessionContext from "./SessionContext";
 
 export default function SessionProvider({ children }: SessionProviderProps) {
@@ -11,11 +14,26 @@ export default function SessionProvider({ children }: SessionProviderProps) {
 }
 
 function useSession() {
+  const { session } = useLazyLoadQuery<SessionProviderQuery>(
+    graphql`
+      query SessionProviderQuery {
+        session {
+          id
+          jwt
+        }
+      }
+    `,
+    {}
+  );
+
+  // Hide the splash screen
+  SplashScreen.hide();
+
   return useMemo(() => {
     return {
-      session: null,
+      session,
     };
-  }, []);
+  }, [session]);
 }
 
 type SessionProviderProps = {
