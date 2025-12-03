@@ -1,7 +1,6 @@
 import SessionProvider from "@/context/Session/SessionProvider";
-import useSessionContext from "@/context/Session/useSessionContext";
 import { environment } from "@/lib/environment";
-import { SplashScreen, Stack } from "expo-router";
+import { Slot, SplashScreen } from "expo-router";
 import React, { Suspense } from "react";
 import { RelayEnvironmentProvider } from "react-relay";
 
@@ -12,26 +11,9 @@ export default function _layout() {
     <RelayEnvironmentProvider environment={environment}>
       <Suspense>
         <SessionProvider>
-          <RootNavigator />
+          <Slot initialRouteName="(app)" />
         </SessionProvider>
       </Suspense>
     </RelayEnvironmentProvider>
-  );
-}
-
-function RootNavigator() {
-  const { session } = useSessionContext();
-  console.log("🚀 ~ RootNavigator ~ session:", session);
-
-  return (
-    <Stack>
-      <Stack.Protected guard={!!session}>
-        <Stack.Screen name="(app)" />
-      </Stack.Protected>
-
-      <Stack.Protected guard={!session}>
-        <Stack.Screen name="SignIn" />
-      </Stack.Protected>
-    </Stack>
   );
 }

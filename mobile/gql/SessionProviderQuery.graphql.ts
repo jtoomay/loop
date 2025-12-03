@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<73c645c36e18a8729c22152dc020d4b6>>
+ * @generated SignedSource<<6c3986b45a49b8028ee9316834299ca4>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -14,7 +14,7 @@ export type SessionProviderQuery$data = {
   readonly session: {
     readonly id: string;
     readonly jwt: string;
-  };
+  } | null | undefined;
 };
 export type SessionProviderQuery = {
   response: SessionProviderQuery$data;

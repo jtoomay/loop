@@ -21,7 +21,7 @@ directive @specifiedBy(
 ) on SCALAR
 
 type Query {
-  session: Session!
+  session: Session
 }
 
 type Session {
