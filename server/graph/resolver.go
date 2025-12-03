@@ -1,7 +1,6 @@
 package graph
 
 import (
-	"github.com/brightsidedeveloper/loop/graph/model"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -11,6 +10,5 @@ import (
 // here.
 
 type Resolver struct {
-	DB    *pgxpool.Pool
-	Users []*model.User
+	DB *pgxpool.Pool
 }

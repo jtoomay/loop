@@ -7,48 +7,19 @@ package graph
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/brightsidedeveloper/loop/graph/model"
 )
 
-// CreateUser is the resolver for the createUser field.
-func (r *mutationResolver) CreateUser(ctx context.Context, name string) (*model.User, error) {
-	r.Users = append(r.Users, &model.User{
-		ID:   fmt.Sprintf("T%d", len(r.Users)+1),
-		Name: name,
-	})
-	return r.Users[len(r.Users)-1], nil
-}
-
-// Hello is the resolver for the hello field.
-func (r *queryResolver) Hello(ctx context.Context) (string, error) {
-	return "Hello world", nil
-}
-
-// Me is the resolver for the me field.
-func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
-	return &model.User{
-		ID:   "1",
-		Name: "John Doe",
+// Session is the resolver for the session field.
+func (r *queryResolver) Session(ctx context.Context) (*model.Session, error) {
+	return &model.Session{
+		ID:  "1",
+		Jwt: "jwt",
 	}, nil
 }
-
-// AddNumbers is the resolver for the addNumbers field.
-func (r *queryResolver) AddNumbers(ctx context.Context, a int32, b int32) (int32, error) {
-	return a + b, nil
-}
-
-// Users is the resolver for the users field.
-func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
-	return r.Resolver.Users, nil
-}
-
-// Mutation returns MutationResolver implementation.
-func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 
 // Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
-type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }

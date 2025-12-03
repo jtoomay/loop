@@ -1,15 +1,8 @@
 type Query {
-  hello: String!
-  me: User!
-  addNumbers(a: Int!, b: Int!): Int!
-  users: [User!]!
+  session: Session!
 }
 
-type Mutation {
-  createUser(name: String!): User!
-}
-
-type User {
+type Session {
   id: ID!
-  name: String!
+  jwt: String!
 }
