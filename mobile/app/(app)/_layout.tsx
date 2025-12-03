@@ -3,10 +3,9 @@ import { Redirect, Stack } from "expo-router";
 import React from "react";
 
 export default function Layout() {
-  const { session } = useSessionContext();
-  console.log("🚀 ~ Layout ~ session:", session);
+  const { id } = useSessionContext();
 
-  if (!session) return <Redirect href="/join" />;
+  if (!id) return <Redirect href="/join" />;
 
   return (
     <Stack>

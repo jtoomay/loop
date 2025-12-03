@@ -14,12 +14,11 @@ export default function SessionProvider({ children }: SessionProviderProps) {
 }
 
 function useSession() {
-  const { session } = useLazyLoadQuery<SessionProviderQuery>(
+  const { me } = useLazyLoadQuery<SessionProviderQuery>(
     graphql`
       query SessionProviderQuery {
-        session {
+        me {
           id
-          token
         }
       }
     `,
@@ -30,10 +29,8 @@ function useSession() {
   SplashScreen.hide();
 
   return useMemo(() => {
-    return {
-      session,
-    };
-  }, [session]);
+    return { id: me?.id };
+  }, [me]);
 }
 
 type SessionProviderProps = {

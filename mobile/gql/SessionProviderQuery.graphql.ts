@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<02689aa30c9f204218a62f64dfd63bc5>>
+ * @generated SignedSource<<3c5854452c107997a116cdb48ff15c21>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -11,9 +11,8 @@
 import { ConcreteRequest } from 'relay-runtime';
 export type SessionProviderQuery$variables = Record<PropertyKey, never>;
 export type SessionProviderQuery$data = {
-  readonly session: {
+  readonly me: {
     readonly id: string;
-    readonly token: string;
   } | null | undefined;
 };
 export type SessionProviderQuery = {
@@ -26,9 +25,9 @@ var v0 = [
   {
     "alias": null,
     "args": null,
-    "concreteType": "Session",
+    "concreteType": "User",
     "kind": "LinkedField",
-    "name": "session",
+    "name": "me",
     "plural": false,
     "selections": [
       {
@@ -36,13 +35,6 @@ var v0 = [
         "args": null,
         "kind": "ScalarField",
         "name": "id",
-        "storageKey": null
-      },
-      {
-        "alias": null,
-        "args": null,
-        "kind": "ScalarField",
-        "name": "token",
         "storageKey": null
       }
     ],
@@ -67,16 +59,16 @@ return {
     "selections": (v0/*: any*/)
   },
   "params": {
-    "cacheID": "724e062b1b7879463aca05cb5196e2f8",
+    "cacheID": "544ad3bd17ab296a30055b00f1be8f3a",
     "id": null,
     "metadata": {},
     "name": "SessionProviderQuery",
     "operationKind": "query",
-    "text": "query SessionProviderQuery {\n  session {\n    id\n    token\n  }\n}\n"
+    "text": "query SessionProviderQuery {\n  me {\n    id\n  }\n}\n"
   }
 };
 })();
 
-(node as any).hash = "382f21578caa4c9d1a73b512f1b3efbe";
+(node as any).hash = "9ed4a988f008d6340a5c3fb6b99bc228";
 
 export default node;

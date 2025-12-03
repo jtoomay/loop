@@ -27,12 +27,10 @@ type Mutation {
 }
 
 type Query {
-  session: Session
-  me: User!
+  me: User
 }
 
 type Session {
-  id: ID!
   token: String!
 }
 
