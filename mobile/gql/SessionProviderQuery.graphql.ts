@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<6c3986b45a49b8028ee9316834299ca4>>
+ * @generated SignedSource<<02689aa30c9f204218a62f64dfd63bc5>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -13,7 +13,7 @@ export type SessionProviderQuery$variables = Record<PropertyKey, never>;
 export type SessionProviderQuery$data = {
   readonly session: {
     readonly id: string;
-    readonly jwt: string;
+    readonly token: string;
   } | null | undefined;
 };
 export type SessionProviderQuery = {
@@ -42,7 +42,7 @@ var v0 = [
         "alias": null,
         "args": null,
         "kind": "ScalarField",
-        "name": "jwt",
+        "name": "token",
         "storageKey": null
       }
     ],
@@ -67,16 +67,16 @@ return {
     "selections": (v0/*: any*/)
   },
   "params": {
-    "cacheID": "f608c3261bd48aebf2f4952b5fd2a5a3",
+    "cacheID": "724e062b1b7879463aca05cb5196e2f8",
     "id": null,
     "metadata": {},
     "name": "SessionProviderQuery",
     "operationKind": "query",
-    "text": "query SessionProviderQuery {\n  session {\n    id\n    jwt\n  }\n}\n"
+    "text": "query SessionProviderQuery {\n  session {\n    id\n    token\n  }\n}\n"
   }
 };
 })();
 
-(node as any).hash = "9b2fccd53e39266011e08d0572a17af6";
+(node as any).hash = "382f21578caa4c9d1a73b512f1b3efbe";
 
 export default node;

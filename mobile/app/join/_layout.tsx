@@ -9,7 +9,7 @@ export default function Layout() {
   if (session) return <Redirect href="/(app)" />;
   return (
     <Stack>
-      <Stack.Screen name="index" />
+      <Stack.Screen name="index" options={{ headerShown: false }} />
     </Stack>
   );
 }

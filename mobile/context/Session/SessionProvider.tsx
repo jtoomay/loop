@@ -19,7 +19,7 @@ function useSession() {
       query SessionProviderQuery {
         session {
           id
-          jwt
+          token
         }
       }
     `,
