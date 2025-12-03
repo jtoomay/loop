@@ -5,10 +5,8 @@ export
 
 up:
 	docker compose up -d
-
 down:
 	docker compose down
-
 fresh:
 	docker compose down -v
 

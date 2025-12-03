@@ -1,35 +1,17 @@
-import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
-} from "@react-navigation/native";
-import { Stack } from "expo-router";
-import { StatusBar } from "expo-status-bar";
-import "react-native-reanimated";
-
-import { useColorScheme } from "@/hooks/use-color-scheme";
 import { environment } from "@/lib/environment";
+import { Stack } from "expo-router";
+import React from "react";
+import { StyleSheet } from "react-native";
 import { RelayEnvironmentProvider } from "react-relay";
 
-export const unstable_settings = {
-  anchor: "(tabs)",
-};
-
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
-
+export default function _layout() {
   return (
     <RelayEnvironmentProvider environment={environment}>
-      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen
-            name="modal"
-            options={{ presentation: "modal", title: "Modal" }}
-          />
-        </Stack>
-        <StatusBar style="auto" />
-      </ThemeProvider>
+      <Stack>
+        <Stack.Screen name="index" />
+      </Stack>
     </RelayEnvironmentProvider>
   );
 }
+
+const styles = StyleSheet.create({});
