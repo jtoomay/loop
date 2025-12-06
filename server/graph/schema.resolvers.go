@@ -14,32 +14,33 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/brightsidedeveloper/loop/graph/model"
 	"github.com/brightsidedeveloper/loop/internal/auth"
+	"github.com/brightsidedeveloper/loop/internal/validation"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 // Signup is the resolver for the signup field.
 func (r *mutationResolver) Signup(ctx context.Context, email string, password string) (*model.Session, error) {
-	// Validate email format (basic check)
+	// Validate email format
 	email = strings.ToLower(strings.TrimSpace(email))
-	if !strings.Contains(email, "@") || !strings.Contains(email, ".") {
+	if err := validation.ValidateEmail(email); err != nil {
 		graphql.AddError(ctx, &gqlerror.Error{
-			Message: "Invalid email format",
+			Message: err.Error(),
 			Extensions: map[string]interface{}{
 				"code": "INVALID_INPUT",
 			},
 		})
-		return nil, errors.New("invalid email format")
+		return nil, err
 	}
 
-	// Validate password length
-	if len(password) < 8 {
+	// Validate password
+	if err := validation.ValidatePassword(password); err != nil {
 		graphql.AddError(ctx, &gqlerror.Error{
-			Message: "Password must be at least 8 characters long",
+			Message: err.Error(),
 			Extensions: map[string]interface{}{
 				"code": "INVALID_INPUT",
 			},
 		})
-		return nil, errors.New("password too short")
+		return nil, err
 	}
 
 	// Check if user already exists
@@ -256,11 +257,222 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, input model.UpdateUse
 	}
 
 	return &model.User{
-		ID:        dbUser.ID,
-		Email:     dbUser.Email,
-		FirstName: firstNamePtr,
-		LastName:  lastNamePtr,
+		ID:            dbUser.ID,
+		Email:         dbUser.Email,
+		EmailVerified: auth.IsEmailVerified(dbUser.EmailVerifiedAt),
+		FirstName:     firstNamePtr,
+		LastName:      lastNamePtr,
 	}, nil
+}
+
+// SendVerificationEmail is the resolver for the sendVerificationEmail field.
+func (r *mutationResolver) SendVerificationEmail(ctx context.Context) (bool, error) {
+	// Get user from context
+	authUser, err := auth.GetUserFromContext(ctx)
+	if err != nil {
+		return false, auth.Unauthorized(ctx)
+	}
+
+	// Get user details
+	dbUser, err := auth.GetUserByID(ctx, r.DB, authUser.ID)
+	if err != nil {
+		return false, err
+	}
+
+	// Check if already verified
+	if auth.IsEmailVerified(dbUser.EmailVerifiedAt) {
+		graphql.AddError(ctx, &gqlerror.Error{
+			Message: "Email is already verified",
+			Extensions: map[string]interface{}{
+				"code": "ALREADY_VERIFIED",
+			},
+		})
+		return false, errors.New("email already verified")
+	}
+
+	// Create verification token
+	token, err := auth.CreateEmailVerificationToken(ctx, r.DB, authUser.ID)
+	if err != nil {
+		return false, err
+	}
+
+	// Send verification email
+	err = r.EmailService.SendVerificationEmail(dbUser.Email, token)
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+// VerifyEmail is the resolver for the verifyEmail field.
+func (r *mutationResolver) VerifyEmail(ctx context.Context, token string) (bool, error) {
+	// Validate token
+	et, err := auth.ValidateEmailVerificationToken(ctx, r.DB, token)
+	if err != nil {
+		graphql.AddError(ctx, &gqlerror.Error{
+			Message: err.Error(),
+			Extensions: map[string]interface{}{
+				"code": "INVALID_TOKEN",
+			},
+		})
+		return false, err
+	}
+
+	// Mark token as used
+	err = auth.MarkEmailVerificationTokenAsUsed(ctx, r.DB, et.ID)
+	if err != nil {
+		return false, err
+	}
+
+	// Verify user's email
+	err = auth.VerifyUserEmail(ctx, r.DB, et.UserID)
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+// ForgotPassword is the resolver for the forgotPassword field.
+func (r *mutationResolver) ForgotPassword(ctx context.Context, email string) (bool, error) {
+	// Validate email format
+	email = strings.ToLower(strings.TrimSpace(email))
+	if err := validation.ValidateEmail(email); err != nil {
+		// Return success even if invalid (security best practice)
+		return true, nil
+	}
+
+	// Get user by email (don't reveal if user exists for security)
+	dbUser, err := auth.GetUserByEmail(ctx, r.DB, email)
+	if err != nil {
+		// Return success even if user doesn't exist (security best practice)
+		// This prevents email enumeration attacks
+		return true, nil
+	}
+
+	// Create password reset token
+	token, err := auth.CreatePasswordResetToken(ctx, r.DB, dbUser.ID)
+	if err != nil {
+		return false, err
+	}
+
+	// Send password reset email
+	err = r.EmailService.SendPasswordResetEmail(dbUser.Email, token)
+	if err != nil {
+		return false, err
+	}
+
+	// Always return true (don't reveal if email exists)
+	return true, nil
+}
+
+// ResetPassword is the resolver for the resetPassword field.
+func (r *mutationResolver) ResetPassword(ctx context.Context, token string, newPassword string) (bool, error) {
+	// Validate password
+	if err := validation.ValidatePassword(newPassword); err != nil {
+		graphql.AddError(ctx, &gqlerror.Error{
+			Message: err.Error(),
+			Extensions: map[string]interface{}{
+				"code": "INVALID_INPUT",
+			},
+		})
+		return false, err
+	}
+
+	// Validate token
+	prt, err := auth.ValidatePasswordResetToken(ctx, r.DB, token)
+	if err != nil {
+		graphql.AddError(ctx, &gqlerror.Error{
+			Message: err.Error(),
+			Extensions: map[string]interface{}{
+				"code": "INVALID_TOKEN",
+			},
+		})
+		return false, err
+	}
+
+	// Hash new password
+	passwordHash, err := auth.HashPassword(newPassword)
+	if err != nil {
+		return false, err
+	}
+
+	// Update user password
+	err = auth.UpdateUserPassword(ctx, r.DB, prt.UserID, passwordHash)
+	if err != nil {
+		return false, err
+	}
+
+	// Mark token as used
+	err = auth.MarkPasswordResetTokenAsUsed(ctx, r.DB, prt.ID)
+	if err != nil {
+		return false, err
+	}
+
+	// Revoke all refresh tokens for security (force re-login)
+	_ = auth.RevokeAllUserRefreshTokens(ctx, r.DB, prt.UserID)
+
+	return true, nil
+}
+
+// ChangePassword is the resolver for the changePassword field.
+func (r *mutationResolver) ChangePassword(ctx context.Context, oldPassword string, newPassword string) (bool, error) {
+	// Get user from context
+	authUser, err := auth.GetUserFromContext(ctx)
+	if err != nil {
+		return false, auth.Unauthorized(ctx)
+	}
+
+	// Validate new password length
+	if len(newPassword) < 8 {
+		graphql.AddError(ctx, &gqlerror.Error{
+			Message: "Password must be at least 8 characters long",
+			Extensions: map[string]interface{}{
+				"code": "INVALID_INPUT",
+			},
+		})
+		return false, errors.New("password too short")
+	}
+
+	// Get user from database
+	dbUser, err := auth.GetUserByID(ctx, r.DB, authUser.ID)
+	if err != nil {
+		return false, err
+	}
+
+	// Verify old password
+	valid, err := auth.VerifyPassword(oldPassword, dbUser.PasswordHash)
+	if err != nil {
+		return false, err
+	}
+
+	if !valid {
+		graphql.AddError(ctx, &gqlerror.Error{
+			Message: "Current password is incorrect",
+			Extensions: map[string]interface{}{
+				"code": "UNAUTHENTICATED",
+			},
+		})
+		return false, auth.ErrUnauthorized
+	}
+
+	// Hash new password
+	passwordHash, err := auth.HashPassword(newPassword)
+	if err != nil {
+		return false, err
+	}
+
+	// Update password
+	err = auth.UpdateUserPassword(ctx, r.DB, authUser.ID, passwordHash)
+	if err != nil {
+		return false, err
+	}
+
+	// Revoke all refresh tokens for security (force re-login)
+	_ = auth.RevokeAllUserRefreshTokens(ctx, r.DB, authUser.ID)
+
+	return true, nil
 }
 
 // Me is the resolver for the me field.
@@ -287,10 +499,11 @@ func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
 	}
 
 	return &model.User{
-		ID:        dbUser.ID,
-		Email:     dbUser.Email,
-		FirstName: firstName,
-		LastName:  lastName,
+		ID:            dbUser.ID,
+		Email:         dbUser.Email,
+		EmailVerified: auth.IsEmailVerified(dbUser.EmailVerifiedAt),
+		FirstName:     firstName,
+		LastName:      lastName,
 	}, nil
 }
 

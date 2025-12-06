@@ -12,6 +12,9 @@ type Mutation {
   updateUser(input: UpdateUserInput!): User! @auth
   sendVerificationEmail: Boolean! @auth
   verifyEmail(token: String!): Boolean!
+  forgotPassword(email: String!): Boolean!
+  resetPassword(token: String!, newPassword: String!): Boolean!
+  changePassword(oldPassword: String!, newPassword: String!): Boolean! @auth
 }
 
 input UpdateUserInput {

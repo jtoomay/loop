@@ -19,8 +19,9 @@ type UpdateUserInput struct {
 }
 
 type User struct {
-	ID        string  `json:"id"`
-	Email     string  `json:"email"`
-	FirstName *string `json:"firstName,omitempty"`
-	LastName  *string `json:"lastName,omitempty"`
+	ID            string  `json:"id"`
+	Email         string  `json:"email"`
+	EmailVerified bool    `json:"emailVerified"`
+	FirstName     *string `json:"firstName,omitempty"`
+	LastName      *string `json:"lastName,omitempty"`
 }
