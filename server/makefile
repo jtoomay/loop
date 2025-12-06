@@ -1,4 +1,4 @@
-PHONY: up down fresh migrate-up migrate-down migrate-create psql gen port test test-short test-coverage test-setup
+PHONY: up down fresh migrate-up migrate-down migrate-create psql gen port test test-short test-coverage test-setup run
 
 include .env
 export
@@ -29,6 +29,9 @@ psql:
 
 gen:
 	go tool gqlgen generate
+
+run:
+	go run server.go
 
 test:
 	go test -v ./...
