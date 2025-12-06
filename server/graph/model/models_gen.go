@@ -2,10 +2,24 @@
 
 package model
 
+type Mutation struct {
+}
+
 type Query struct {
 }
 
 type Session struct {
-	ID  string `json:"id"`
-	Jwt string `json:"jwt"`
+	Token string `json:"token"`
+}
+
+type UpdateUserInput struct {
+	FirstName *string `json:"firstName,omitempty"`
+	LastName  *string `json:"lastName,omitempty"`
+}
+
+type User struct {
+	ID        string  `json:"id"`
+	Email     string  `json:"email"`
+	FirstName *string `json:"firstName,omitempty"`
+	LastName  *string `json:"lastName,omitempty"`
 }

@@ -1,8 +1,27 @@
+directive @auth on FIELD_DEFINITION
+
 type Query {
-  session: Session!
+  me: User @auth
+}
+
+type Mutation {
+  signup(email: String!, password: String!): Session!
+  login(email: String!, password: String!): Session!
+  updateUser(input: UpdateUserInput!): User! @auth
+}
+
+input UpdateUserInput {
+  firstName: String
+  lastName: String
 }
 
 type Session {
+  token: String!
+}
+
+type User {
   id: ID!
-  jwt: String!
+  email: String!
+  firstName: String
+  lastName: String
 }

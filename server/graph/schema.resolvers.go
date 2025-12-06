@@ -7,19 +7,229 @@ package graph
 
 import (
 	"context"
+	"errors"
+	"strings"
+	"time"
 
+	"github.com/99designs/gqlgen/graphql"
 	"github.com/brightsidedeveloper/loop/graph/model"
+	"github.com/brightsidedeveloper/loop/internal/auth"
+	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
-// Session is the resolver for the session field.
-func (r *queryResolver) Session(ctx context.Context) (*model.Session, error) {
+// Signup is the resolver for the signup field.
+func (r *mutationResolver) Signup(ctx context.Context, email string, password string) (*model.Session, error) {
+	// Validate email format (basic check)
+	email = strings.ToLower(strings.TrimSpace(email))
+	if !strings.Contains(email, "@") || !strings.Contains(email, ".") {
+		graphql.AddError(ctx, &gqlerror.Error{
+			Message: "Invalid email format",
+			Extensions: map[string]interface{}{
+				"code": "INVALID_INPUT",
+			},
+		})
+		return nil, errors.New("invalid email format")
+	}
+
+	// Validate password length
+	if len(password) < 8 {
+		graphql.AddError(ctx, &gqlerror.Error{
+			Message: "Password must be at least 8 characters long",
+			Extensions: map[string]interface{}{
+				"code": "INVALID_INPUT",
+			},
+		})
+		return nil, errors.New("password too short")
+	}
+
+	// Check if user already exists
+	existingUser, err := auth.GetUserByEmail(ctx, r.DB, email)
+	if err == nil && existingUser != nil {
+		graphql.AddError(ctx, &gqlerror.Error{
+			Message: "User with this email already exists",
+			Extensions: map[string]interface{}{
+				"code": "ALREADY_EXISTS",
+			},
+		})
+		return nil, errors.New("user already exists")
+	}
+	if err != nil && !errors.Is(err, auth.ErrInvalidPassword) {
+		return nil, err
+	}
+
+	// Hash password
+	passwordHash, err := auth.HashPassword(password)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create user (firstName and lastName will be set via updateUser mutation)
+	dbUser, err := auth.CreateUser(ctx, r.DB, email, passwordHash, nil, nil)
+	if err != nil {
+		// Check for unique constraint violation (PostgreSQL error code 23505)
+		if strings.Contains(err.Error(), "23505") || strings.Contains(err.Error(), "unique") {
+			graphql.AddError(ctx, &gqlerror.Error{
+				Message: "User with this email already exists",
+				Extensions: map[string]interface{}{
+					"code": "ALREADY_EXISTS",
+				},
+			})
+			return nil, errors.New("user already exists")
+		}
+		return nil, err
+	}
+
+	// Generate JWT token
+	token, err := auth.GenerateToken(dbUser.ID)
+	if err != nil {
+		return nil, err
+	}
+
 	return &model.Session{
-		ID:  "1",
-		Jwt: "jwt",
+		Token: token,
 	}, nil
 }
+
+// Login is the resolver for the login field.
+func (r *mutationResolver) Login(ctx context.Context, email string, password string) (*model.Session, error) {
+	email = strings.ToLower(strings.TrimSpace(email))
+
+	// Get user from database
+	dbUser, err := auth.GetUserByEmail(ctx, r.DB, email)
+	if err != nil {
+		// Don't reveal if user exists - use same error for both cases
+		graphql.AddError(ctx, &gqlerror.Error{
+			Message: "Invalid email or password",
+			Extensions: map[string]interface{}{
+				"code": "UNAUTHENTICATED",
+			},
+		})
+		return nil, auth.ErrUnauthorized
+	}
+
+	// Check if account is locked
+	if dbUser.IsAccountLocked() {
+		graphql.AddError(ctx, &gqlerror.Error{
+			Message: "Account is locked due to too many failed login attempts",
+			Extensions: map[string]interface{}{
+				"code": "ACCOUNT_LOCKED",
+			},
+		})
+		return nil, errors.New("account locked")
+	}
+
+	// Verify password
+	valid, err := auth.VerifyPassword(password, dbUser.PasswordHash)
+	if err != nil {
+		return nil, err
+	}
+
+	if !valid {
+		// Increment failed login attempts
+		_ = auth.IncrementFailedLoginAttempts(ctx, r.DB, dbUser.ID)
+
+		// Lock account after 5 failed attempts (for 15 minutes)
+		if dbUser.FailedLoginAttempts >= 4 { // 0-indexed, so 4 means 5th attempt
+			lockUntil := time.Now().Add(15 * time.Minute)
+			_, _ = r.DB.Exec(ctx, `
+				UPDATE users
+				SET locked_until = $1
+				WHERE id = $2
+			`, lockUntil, dbUser.ID)
+		}
+
+		graphql.AddError(ctx, &gqlerror.Error{
+			Message: "Invalid email or password",
+			Extensions: map[string]interface{}{
+				"code": "UNAUTHENTICATED",
+			},
+		})
+		return nil, auth.ErrUnauthorized
+	}
+
+	// Reset failed login attempts on successful login
+	if dbUser.FailedLoginAttempts > 0 {
+		_ = auth.ResetFailedLoginAttempts(ctx, r.DB, dbUser.ID)
+	}
+
+	// Generate JWT token
+	token, err := auth.GenerateToken(dbUser.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.Session{
+		Token: token,
+	}, nil
+}
+
+// UpdateUser is the resolver for the updateUser field.
+func (r *mutationResolver) UpdateUser(ctx context.Context, input model.UpdateUserInput) (*model.User, error) {
+	// Get user from context (set by auth middleware)
+	authUser, err := auth.GetUserFromContext(ctx)
+	if err != nil {
+		return nil, auth.Unauthorized(ctx)
+	}
+
+	// Update user in database
+	dbUser, err := auth.UpdateUser(ctx, r.DB, authUser.ID, input.FirstName, input.LastName)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extract firstName and lastName from database
+	var firstNamePtr, lastNamePtr *string
+	if dbUser.FirstName.Valid {
+		firstNamePtr = &dbUser.FirstName.String
+	}
+	if dbUser.LastName.Valid {
+		lastNamePtr = &dbUser.LastName.String
+	}
+
+	return &model.User{
+		ID:        dbUser.ID,
+		Email:     dbUser.Email,
+		FirstName: firstNamePtr,
+		LastName:  lastNamePtr,
+	}, nil
+}
+
+// Me is the resolver for the me field.
+func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
+	// Get user from context (set by auth middleware)
+	authUser, err := auth.GetUserFromContext(ctx)
+	if err != nil {
+		return nil, auth.Unauthorized(ctx)
+	}
+
+	// Fetch full user details from database
+	dbUser, err := auth.GetUserByID(ctx, r.DB, authUser.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extract firstName and lastName from database
+	var firstName, lastName *string
+	if dbUser.FirstName.Valid {
+		firstName = &dbUser.FirstName.String
+	}
+	if dbUser.LastName.Valid {
+		lastName = &dbUser.LastName.String
+	}
+
+	return &model.User{
+		ID:        dbUser.ID,
+		Email:     dbUser.Email,
+		FirstName: firstName,
+		LastName:  lastName,
+	}, nil
+}
+
+// Mutation returns MutationResolver implementation.
+func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 
 // Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
+type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }

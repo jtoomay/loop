@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/extension"
@@ -12,6 +13,9 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/brightsidedeveloper/loop/graph"
+	"github.com/brightsidedeveloper/loop/graph/directives"
+	"github.com/brightsidedeveloper/loop/internal/auth"
+	"github.com/gorilla/websocket"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	"github.com/vektah/gqlparser/v2/ast"
@@ -19,6 +23,7 @@ import (
 
 func main() {
 	loadEnv()
+	auth.Init()
 	db := loadDB()
 	defer db.Close()
 
@@ -29,8 +34,21 @@ func main() {
 
 	srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{
 		DB: db,
-	}}))
+	},
+		Directives: graph.DirectiveRoot{
+			Auth: directives.AuthDirective,
+		},
+	}))
 
+	srv.AddTransport(transport.Websocket{
+		KeepAlivePingInterval: 10 * time.Second,
+		Upgrader: websocket.Upgrader{
+			CheckOrigin: func(r *http.Request) bool {
+				// In dev: allow all
+				return true
+			},
+		},
+	})
 	srv.AddTransport(transport.Options{})
 	srv.AddTransport(transport.GET{})
 	srv.AddTransport(transport.POST{})
@@ -42,8 +60,10 @@ func main() {
 		Cache: lru.New[string](100),
 	})
 
+	queryHandler := auth.Middleware(srv)
+
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	http.Handle("/query", srv)
+	http.Handle("/query", queryHandler)
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
