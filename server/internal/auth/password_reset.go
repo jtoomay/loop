@@ -112,4 +112,3 @@ func UpdateUserPassword(ctx context.Context, db *pgxpool.Pool, userID, newPasswo
 	`, newPasswordHash, userID)
 	return err
 }
-

@@ -26,7 +26,7 @@ import (
 
 func main() {
 	loadEnv()
-	
+
 	// Load and validate configuration
 	cfg, err := config.Load()
 	if err != nil {
@@ -37,7 +37,7 @@ func main() {
 	db := loadDB()
 	defer db.Close()
 
-	emailService := email.NewMockService(email.LoadConfig())
+	emailService := email.NewService(email.LoadConfig())
 
 	logger.Log.Info().Str("port", cfg.Port).Msg("Starting server")
 
@@ -51,7 +51,7 @@ func main() {
 	}))
 
 	corsConfig := middleware.LoadCORSConfig()
-	
+
 	srv.AddTransport(transport.Websocket{
 		KeepAlivePingInterval: 10 * time.Second,
 		Upgrader: websocket.Upgrader{
@@ -104,7 +104,7 @@ func main() {
 	logger.Log.Info().
 		Str("port", cfg.Port).
 		Msg("Server started. GraphQL playground available at http://localhost:" + cfg.Port)
-	
+
 	if err := http.ListenAndServe(":"+cfg.Port, nil); err != nil {
 		logger.Log.Fatal().Err(err).Msg("Server failed to start")
 	}

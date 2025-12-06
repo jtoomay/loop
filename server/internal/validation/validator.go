@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	validate  *validator.Validate
+	validate   *validator.Validate
 	emailRegex *regexp.Regexp
 )
 
@@ -20,7 +20,7 @@ func init() {
 }
 
 var (
-	ErrInvalidEmail    = errors.New("invalid email format")
+	ErrInvalidEmail     = errors.New("invalid email format")
 	ErrPasswordTooShort = errors.New("password must be at least 8 characters long")
 )
 
@@ -45,4 +45,3 @@ func ValidatePassword(password string) error {
 func ValidateStruct(s interface{}) error {
 	return validate.Struct(s)
 }
-

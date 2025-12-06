@@ -71,5 +71,3 @@ func getClientIP(r *http.Request) string {
 	// Fall back to RemoteAddr
 	return r.RemoteAddr
 }
-
-

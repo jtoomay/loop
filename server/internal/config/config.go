@@ -9,11 +9,11 @@ import (
 
 // Config holds application configuration
 type Config struct {
-	Port            string
-	DatabaseURL     string
-	CORSOrigins    []string
-	JWTPrivateKey  string
-	JWTPublicKey   string
+	Port          string
+	DatabaseURL   string
+	CORSOrigins   []string
+	JWTPrivateKey string
+	JWTPublicKey  string
 }
 
 // Required environment variables
@@ -53,4 +53,3 @@ func Load() (*Config, error) {
 	logger.Log.Info().Msg("Configuration loaded successfully")
 	return config, nil
 }
-

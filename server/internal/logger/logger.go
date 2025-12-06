@@ -38,4 +38,3 @@ func init() {
 func ForContext(ctx interface{}) zerolog.Logger {
 	return Log.With().Interface("context", ctx).Logger()
 }
-

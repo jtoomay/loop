@@ -11,6 +11,6 @@ import (
 // here.
 
 type Resolver struct {
-	DB          *pgxpool.Pool
+	DB           *pgxpool.Pool
 	EmailService email.Service
 }

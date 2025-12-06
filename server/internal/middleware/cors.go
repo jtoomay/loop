@@ -18,7 +18,7 @@ type CORSConfig struct {
 // LoadCORSConfig loads CORS configuration from environment
 func LoadCORSConfig() *CORSConfig {
 	allowedOrigins := []string{"*"} // Default: allow all (dev mode)
-	
+
 	if origins := os.Getenv("CORS_ALLOWED_ORIGINS"); origins != "" {
 		allowedOrigins = strings.Split(origins, ",")
 		for i := range allowedOrigins {
@@ -68,4 +68,3 @@ func CORS(config *CORSConfig) func(http.Handler) http.Handler {
 		})
 	}
 }
-
