@@ -57,11 +57,12 @@ func Init() {
 	}
 }
 
-func GenerateToken(userID string) (string, error) {
-	expiration := 72 * time.Hour
-	if hours := os.Getenv("JWT_EXPIRES_HOURS"); hours != "" {
-		if h, err := strconv.Atoi(hours); err == nil {
-			expiration = time.Duration(h) * time.Hour
+// GenerateAccessToken generates a short-lived access token (15-30 minutes)
+func GenerateAccessToken(userID string) (string, error) {
+	expiration := 15 * time.Minute // Short-lived for security
+	if minutes := os.Getenv("JWT_ACCESS_EXPIRES_MINUTES"); minutes != "" {
+		if m, err := strconv.Atoi(minutes); err == nil {
+			expiration = time.Duration(m) * time.Minute
 		}
 	}
 
@@ -70,7 +71,7 @@ func GenerateToken(userID string) (string, error) {
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(expiration)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
-			Issuer:    "gql-todo-app",
+			Issuer:    "loop-app",
 		},
 	}
 

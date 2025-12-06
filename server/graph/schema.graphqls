@@ -7,7 +7,11 @@ type Query {
 type Mutation {
   signup(email: String!, password: String!): Session!
   login(email: String!, password: String!): Session!
+  logout: Boolean! @auth
+  refreshToken(refreshToken: String!): Session!
   updateUser(input: UpdateUserInput!): User! @auth
+  sendVerificationEmail: Boolean! @auth
+  verifyEmail(token: String!): Boolean!
 }
 
 input UpdateUserInput {
@@ -16,12 +20,14 @@ input UpdateUserInput {
 }
 
 type Session {
-  token: String!
+  accessToken: String!
+  refreshToken: String!
 }
 
 type User {
   id: ID!
   email: String!
+  emailVerified: Boolean!
   firstName: String
   lastName: String
 }

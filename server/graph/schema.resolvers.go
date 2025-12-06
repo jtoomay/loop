@@ -79,14 +79,21 @@ func (r *mutationResolver) Signup(ctx context.Context, email string, password st
 		return nil, err
 	}
 
-	// Generate JWT token
-	token, err := auth.GenerateToken(dbUser.ID)
+	// Generate access token
+	accessToken, err := auth.GenerateAccessToken(dbUser.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Generate and store refresh token
+	refreshToken, err := auth.CreateRefreshToken(ctx, r.DB, dbUser.ID)
 	if err != nil {
 		return nil, err
 	}
 
 	return &model.Session{
-		Token: token,
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
 	}, nil
 }
 
@@ -152,14 +159,76 @@ func (r *mutationResolver) Login(ctx context.Context, email string, password str
 		_ = auth.ResetFailedLoginAttempts(ctx, r.DB, dbUser.ID)
 	}
 
-	// Generate JWT token
-	token, err := auth.GenerateToken(dbUser.ID)
+	// Generate access token
+	accessToken, err := auth.GenerateAccessToken(dbUser.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Generate and store refresh token
+	refreshToken, err := auth.CreateRefreshToken(ctx, r.DB, dbUser.ID)
 	if err != nil {
 		return nil, err
 	}
 
 	return &model.Session{
-		Token: token,
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	}, nil
+}
+
+// Logout is the resolver for the logout field.
+func (r *mutationResolver) Logout(ctx context.Context) (bool, error) {
+	// Get user from context (set by auth middleware)
+	authUser, err := auth.GetUserFromContext(ctx)
+	if err != nil {
+		return false, auth.Unauthorized(ctx)
+	}
+
+	// Revoke all refresh tokens for this user
+	err = auth.RevokeAllUserRefreshTokens(ctx, r.DB, authUser.ID)
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+// RefreshToken is the resolver for the refreshToken field.
+func (r *mutationResolver) RefreshToken(ctx context.Context, refreshToken string) (*model.Session, error) {
+	// Validate the refresh token
+	rt, err := auth.ValidateRefreshToken(ctx, r.DB, refreshToken)
+	if err != nil {
+		graphql.AddError(ctx, &gqlerror.Error{
+			Message: "Invalid or expired refresh token",
+			Extensions: map[string]interface{}{
+				"code": "UNAUTHENTICATED",
+			},
+		})
+		return nil, auth.ErrUnauthorized
+	}
+
+	// Revoke the old refresh token (token rotation for security)
+	err = auth.RevokeRefreshToken(ctx, r.DB, refreshToken)
+	if err != nil {
+		return nil, err
+	}
+
+	// Generate new access token
+	accessToken, err := auth.GenerateAccessToken(rt.UserID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Generate new refresh token
+	newRefreshToken, err := auth.CreateRefreshToken(ctx, r.DB, rt.UserID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.Session{
+		AccessToken:  accessToken,
+		RefreshToken: newRefreshToken,
 	}, nil
 }
 

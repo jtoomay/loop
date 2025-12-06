@@ -49,9 +49,11 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Mutation struct {
-		Login      func(childComplexity int, email string, password string) int
-		Signup     func(childComplexity int, email string, password string) int
-		UpdateUser func(childComplexity int, input model.UpdateUserInput) int
+		Login        func(childComplexity int, email string, password string) int
+		Logout       func(childComplexity int) int
+		RefreshToken func(childComplexity int, refreshToken string) int
+		Signup       func(childComplexity int, email string, password string) int
+		UpdateUser   func(childComplexity int, input model.UpdateUserInput) int
 	}
 
 	Query struct {
@@ -59,7 +61,8 @@ type ComplexityRoot struct {
 	}
 
 	Session struct {
-		Token func(childComplexity int) int
+		AccessToken  func(childComplexity int) int
+		RefreshToken func(childComplexity int) int
 	}
 
 	User struct {
@@ -73,6 +76,8 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	Signup(ctx context.Context, email string, password string) (*model.Session, error)
 	Login(ctx context.Context, email string, password string) (*model.Session, error)
+	Logout(ctx context.Context) (bool, error)
+	RefreshToken(ctx context.Context, refreshToken string) (*model.Session, error)
 	UpdateUser(ctx context.Context, input model.UpdateUserInput) (*model.User, error)
 }
 type QueryResolver interface {
@@ -109,6 +114,23 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Mutation.Login(childComplexity, args["email"].(string), args["password"].(string)), true
+	case "Mutation.logout":
+		if e.complexity.Mutation.Logout == nil {
+			break
+		}
+
+		return e.complexity.Mutation.Logout(childComplexity), true
+	case "Mutation.refreshToken":
+		if e.complexity.Mutation.RefreshToken == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_refreshToken_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.RefreshToken(childComplexity, args["refreshToken"].(string)), true
 	case "Mutation.signup":
 		if e.complexity.Mutation.Signup == nil {
 			break
@@ -139,12 +161,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Query.Me(childComplexity), true
 
-	case "Session.token":
-		if e.complexity.Session.Token == nil {
+	case "Session.accessToken":
+		if e.complexity.Session.AccessToken == nil {
 			break
 		}
 
-		return e.complexity.Session.Token(childComplexity), true
+		return e.complexity.Session.AccessToken(childComplexity), true
+	case "Session.refreshToken":
+		if e.complexity.Session.RefreshToken == nil {
+			break
+		}
+
+		return e.complexity.Session.RefreshToken(childComplexity), true
 
 	case "User.email":
 		if e.complexity.User.Email == nil {
@@ -312,6 +340,17 @@ func (ec *executionContext) field_Mutation_login_args(ctx context.Context, rawAr
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_refreshToken_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "refreshToken", ec.unmarshalNString2string)
+	if err != nil {
+		return nil, err
+	}
+	args["refreshToken"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_signup_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -427,8 +466,10 @@ func (ec *executionContext) fieldContext_Mutation_signup(ctx context.Context, fi
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "token":
-				return ec.fieldContext_Session_token(ctx, field)
+			case "accessToken":
+				return ec.fieldContext_Session_accessToken(ctx, field)
+			case "refreshToken":
+				return ec.fieldContext_Session_refreshToken(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Session", field.Name)
 		},
@@ -472,8 +513,10 @@ func (ec *executionContext) fieldContext_Mutation_login(ctx context.Context, fie
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "token":
-				return ec.fieldContext_Session_token(ctx, field)
+			case "accessToken":
+				return ec.fieldContext_Session_accessToken(ctx, field)
+			case "refreshToken":
+				return ec.fieldContext_Session_refreshToken(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Session", field.Name)
 		},
@@ -486,6 +529,95 @@ func (ec *executionContext) fieldContext_Mutation_login(ctx context.Context, fie
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_login_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_logout(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_logout,
+		func(ctx context.Context) (any, error) {
+			return ec.resolvers.Mutation().Logout(ctx)
+		},
+		func(ctx context.Context, next graphql.Resolver) graphql.Resolver {
+			directive0 := next
+
+			directive1 := func(ctx context.Context) (any, error) {
+				if ec.directives.Auth == nil {
+					var zeroVal bool
+					return zeroVal, errors.New("directive auth is not implemented")
+				}
+				return ec.directives.Auth(ctx, nil, directive0)
+			}
+
+			next = directive1
+			return next
+		},
+		ec.marshalNBoolean2bool,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_logout(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_refreshToken(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_refreshToken,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.resolvers.Mutation().RefreshToken(ctx, fc.Args["refreshToken"].(string))
+		},
+		nil,
+		ec.marshalNSession2ᚖgithubᚗcomᚋbrightsidedeveloperᚋloopᚋgraphᚋmodelᚐSession,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_refreshToken(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "accessToken":
+				return ec.fieldContext_Session_accessToken(ctx, field)
+			case "refreshToken":
+				return ec.fieldContext_Session_refreshToken(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Session", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_refreshToken_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -716,14 +848,14 @@ func (ec *executionContext) fieldContext_Query___schema(_ context.Context, field
 	return fc, nil
 }
 
-func (ec *executionContext) _Session_token(ctx context.Context, field graphql.CollectedField, obj *model.Session) (ret graphql.Marshaler) {
+func (ec *executionContext) _Session_accessToken(ctx context.Context, field graphql.CollectedField, obj *model.Session) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_Session_token,
+		ec.fieldContext_Session_accessToken,
 		func(ctx context.Context) (any, error) {
-			return obj.Token, nil
+			return obj.AccessToken, nil
 		},
 		nil,
 		ec.marshalNString2string,
@@ -732,7 +864,36 @@ func (ec *executionContext) _Session_token(ctx context.Context, field graphql.Co
 	)
 }
 
-func (ec *executionContext) fieldContext_Session_token(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Session_accessToken(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Session",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Session_refreshToken(ctx context.Context, field graphql.CollectedField, obj *model.Session) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Session_refreshToken,
+		func(ctx context.Context) (any, error) {
+			return obj.RefreshToken, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Session_refreshToken(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Session",
 		Field:      field,
@@ -2382,6 +2543,20 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "logout":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_logout(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "refreshToken":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_refreshToken(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "updateUser":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_updateUser(ctx, field)
@@ -2492,8 +2667,13 @@ func (ec *executionContext) _Session(ctx context.Context, sel ast.SelectionSet, 
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Session")
-		case "token":
-			out.Values[i] = ec._Session_token(ctx, field, obj)
+		case "accessToken":
+			out.Values[i] = ec._Session_accessToken(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "refreshToken":
+			out.Values[i] = ec._Session_refreshToken(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
