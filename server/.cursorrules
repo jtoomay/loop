@@ -388,16 +388,39 @@ if err != nil {
 
 ## Makefile Commands
 
-- `make gen` - Regenerate GraphQL code
-- `make migrate-up` - Run migrations
-- `make migrate-down` - Rollback one migration
-- `make migrate-create` - Create new migration
-- `make test` - Run all tests (with setup)
-- `make test-short` - Run tests in short mode
-- `make test-setup` - Setup test database
-- `make run` - Run server
-- `make up` - Start Docker database
-- `make down` - Stop Docker database
+### Code Generation
+
+- `make gen` - Regenerate GraphQL code after schema changes
+
+### Database Migrations
+
+- `make migrate-up` - Run all pending migrations
+- `make migrate-down` - Rollback the last migration (one step)
+- `make migrate-create` - Create new migration files
+  - **Usage**:
+    - Interactive: Run `make migrate-create` and enter name when prompted
+    - Non-interactive: `echo "migration_name" | make migrate-create`
+  - Creates both `.up.sql` and `.down.sql` files with sequential numbering
+  - Migration name should be in snake_case (e.g., `oauth_accounts`, `file_uploads`)
+  - Files are created in `migrations/` directory with format: `000XXX_name.up.sql` and `000XXX_name.down.sql`
+  - The `-seq` flag ensures sequential numbering automatically
+
+### Testing
+
+- `make test` - Run all tests (includes test-setup automatically)
+- `make test-short` - Run tests in short mode (skips integration tests)
+- `make test-setup` - Setup test database (creates `loop_test` DB, clears it, runs migrations)
+  - Requires `.env` file with `POSTGRES_USER`, `POSTGRES_PASSWORD`, `DB_PORT`
+  - Sets `TEST_DATABASE_URL` environment variable
+
+### Development
+
+- `make run` - Run the server (`go run server.go`)
+- `make up` - Start Docker database container
+- `make down` - Stop Docker database container
+- `make fresh` - Stop Docker and remove volumes (clean slate)
+- `make psql` - Open PostgreSQL CLI connection
+- `make port` - Show local network IP addresses
 
 ## File Organization Rules
 
