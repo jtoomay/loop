@@ -247,22 +247,7 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, input model.UpdateUse
 		return nil, err
 	}
 
-	// Extract firstName and lastName from database
-	var firstNamePtr, lastNamePtr *string
-	if dbUser.FirstName.Valid {
-		firstNamePtr = &dbUser.FirstName.String
-	}
-	if dbUser.LastName.Valid {
-		lastNamePtr = &dbUser.LastName.String
-	}
-
-	return &model.User{
-		ID:            dbUser.ID,
-		Email:         dbUser.Email,
-		EmailVerified: auth.IsEmailVerified(dbUser.EmailVerifiedAt),
-		FirstName:     firstNamePtr,
-		LastName:      lastNamePtr,
-	}, nil
+	return dbUserToModel(dbUser), nil
 }
 
 // SendVerificationEmail is the resolver for the sendVerificationEmail field.
@@ -473,35 +458,6 @@ func (r *mutationResolver) ChangePassword(ctx context.Context, oldPassword strin
 	_ = auth.RevokeAllUserRefreshTokens(ctx, r.DB, authUser.ID)
 
 	return true, nil
-}
-
-// Helper function to convert DBUser to model.User
-func dbUserToModel(dbUser *auth.DBUser) *model.User {
-	var firstName, lastName *string
-	if dbUser.FirstName.Valid {
-		firstName = &dbUser.FirstName.String
-	}
-	if dbUser.LastName.Valid {
-		lastName = &dbUser.LastName.String
-	}
-
-	var role model.UserRole
-	if dbUser.Role == "admin" {
-		role = model.UserRoleAdmin
-	} else {
-		role = model.UserRoleUser
-	}
-
-	return &model.User{
-		ID:            dbUser.ID,
-		Email:         dbUser.Email,
-		EmailVerified: auth.IsEmailVerified(dbUser.EmailVerifiedAt),
-		FirstName:     firstName,
-		LastName:      lastName,
-		Role:          role,
-		Locked:        dbUser.IsAccountLocked(),
-		CreatedAt:     dbUser.CreatedAt.Format(time.RFC3339),
-	}
 }
 
 // RevokeUserTokens is the resolver for the revokeUserTokens field.
