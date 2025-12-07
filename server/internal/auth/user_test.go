@@ -33,6 +33,7 @@ func TestCreateUser(t *testing.T) {
 	assert.Equal(t, firstName, user.FirstName.String)
 	assert.True(t, user.LastName.Valid)
 	assert.Equal(t, lastName, user.LastName.String)
+	assert.Equal(t, "user", user.Role) // Default role should be "user"
 
 	// Try to create duplicate user (should fail)
 	_, err = CreateUser(ctx, db, email, passwordHash, nil, nil)
@@ -60,6 +61,7 @@ func TestGetUserByEmail(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, createdUser.ID, user.ID)
 	assert.Equal(t, email, user.Email)
+	assert.Equal(t, "user", user.Role) // Default role should be "user"
 
 	// Try to get non-existent user
 	_, err = GetUserByEmail(ctx, db, "nonexistent@example.com")
@@ -88,6 +90,7 @@ func TestGetUserByID(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, createdUser.ID, user.ID)
 	assert.Equal(t, email, user.Email)
+	assert.Equal(t, "user", user.Role) // Default role should be "user"
 
 	// Try to get non-existent user
 	_, err = GetUserByID(ctx, db, "00000000-0000-0000-0000-000000000000")

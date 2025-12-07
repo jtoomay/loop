@@ -34,14 +34,12 @@ run:
 	go run server.go
 
 test:
+	$(MAKE) test-setup
 	go test -v ./...
 
 test-short:
 	go test -short -v ./...
 
-test-coverage:
-	go test -v -coverprofile=coverage.out ./...
-	go tool cover -html=coverage.out -o coverage.html
 
 test-setup:
 	@if [ -z "$$POSTGRES_USER" ] || [ -z "$$POSTGRES_PASSWORD" ] || [ -z "$$DB_PORT" ]; then \

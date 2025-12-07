@@ -2,6 +2,13 @@
 
 package model
 
+import (
+	"bytes"
+	"fmt"
+	"io"
+	"strconv"
+)
+
 type Mutation struct {
 }
 
@@ -13,15 +20,86 @@ type Session struct {
 	RefreshToken string `json:"refreshToken"`
 }
 
+type SystemStats struct {
+	TotalUsers    int32 `json:"totalUsers"`
+	VerifiedUsers int32 `json:"verifiedUsers"`
+	LockedUsers   int32 `json:"lockedUsers"`
+	AdminUsers    int32 `json:"adminUsers"`
+}
+
 type UpdateUserInput struct {
 	FirstName *string `json:"firstName,omitempty"`
 	LastName  *string `json:"lastName,omitempty"`
 }
 
 type User struct {
-	ID            string  `json:"id"`
-	Email         string  `json:"email"`
-	EmailVerified bool    `json:"emailVerified"`
-	FirstName     *string `json:"firstName,omitempty"`
-	LastName      *string `json:"lastName,omitempty"`
+	ID            string   `json:"id"`
+	Email         string   `json:"email"`
+	EmailVerified bool     `json:"emailVerified"`
+	FirstName     *string  `json:"firstName,omitempty"`
+	LastName      *string  `json:"lastName,omitempty"`
+	Role          UserRole `json:"role"`
+	Locked        bool     `json:"locked"`
+	CreatedAt     string   `json:"createdAt"`
+}
+
+type UsersConnection struct {
+	Users      []*User `json:"users"`
+	TotalCount int32   `json:"totalCount"`
+	HasMore    bool    `json:"hasMore"`
+}
+
+type UserRole string
+
+const (
+	UserRoleUser  UserRole = "USER"
+	UserRoleAdmin UserRole = "ADMIN"
+)
+
+var AllUserRole = []UserRole{
+	UserRoleUser,
+	UserRoleAdmin,
+}
+
+func (e UserRole) IsValid() bool {
+	switch e {
+	case UserRoleUser, UserRoleAdmin:
+		return true
+	}
+	return false
+}
+
+func (e UserRole) String() string {
+	return string(e)
+}
+
+func (e *UserRole) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = UserRole(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid UserRole", str)
+	}
+	return nil
+}
+
+func (e UserRole) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *UserRole) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e UserRole) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
 }

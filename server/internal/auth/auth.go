@@ -21,7 +21,10 @@ var (
 
 type contextKey string
 
-const UserKey contextKey = "user"
+const (
+	UserKey contextKey = "user"
+	DBKey   contextKey = "db"
+)
 
 type User struct {
 	ID string `json:"id"`

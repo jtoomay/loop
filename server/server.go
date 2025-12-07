@@ -46,7 +46,8 @@ func main() {
 		EmailService: emailService,
 	},
 		Directives: graph.DirectiveRoot{
-			Auth: directives.AuthDirective,
+			Auth:  directives.AuthDirective,
+			Admin: directives.AdminDirective,
 		},
 	}))
 
@@ -78,10 +79,22 @@ func main() {
 		Cache: lru.New[string](100),
 	})
 
-	// Apply CORS, rate limiting, and auth middleware
+	// Middleware to add DB to context
+	dbMiddleware := func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ctx := context.WithValue(r.Context(), auth.DBKey, db)
+			next.ServeHTTP(w, r.WithContext(ctx))
+		})
+	}
+
+	// Apply CORS, logging, rate limiting, DB context, and auth middleware
 	queryHandler := middleware.CORS(corsConfig)(
-		middleware.RateLimitHTTP(
-			auth.Middleware(srv),
+		middleware.RequestLogging(
+			middleware.RateLimitHTTP(
+				dbMiddleware(
+					auth.Middleware(srv),
+				),
+			),
 		),
 	)
 

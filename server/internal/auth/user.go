@@ -21,6 +21,7 @@ type DBUser struct {
 	EmailVerifiedAt     sql.NullTime
 	FirstName           sql.NullString
 	LastName            sql.NullString
+	Role                string
 	FailedLoginAttempts int
 	LockedUntil         sql.NullTime
 	CreatedAt           time.Time
@@ -32,7 +33,7 @@ func GetUserByEmail(ctx context.Context, db *pgxpool.Pool, email string) (*DBUse
 	var user DBUser
 	err := db.QueryRow(ctx, `
 		SELECT id, email, password_hash, email_verified_at, 
-		       first_name, last_name,
+		       first_name, last_name, role,
 		       failed_login_attempts, locked_until, created_at, updated_at
 		FROM users
 		WHERE email = $1
@@ -43,6 +44,7 @@ func GetUserByEmail(ctx context.Context, db *pgxpool.Pool, email string) (*DBUse
 		&user.EmailVerifiedAt,
 		&user.FirstName,
 		&user.LastName,
+		&user.Role,
 		&user.FailedLoginAttempts,
 		&user.LockedUntil,
 		&user.CreatedAt,
@@ -64,7 +66,7 @@ func GetUserByID(ctx context.Context, db *pgxpool.Pool, userID string) (*DBUser,
 	var user DBUser
 	err := db.QueryRow(ctx, `
 		SELECT id, email, password_hash, email_verified_at, 
-		       first_name, last_name,
+		       first_name, last_name, role,
 		       failed_login_attempts, locked_until, created_at, updated_at
 		FROM users
 		WHERE id = $1
@@ -75,6 +77,7 @@ func GetUserByID(ctx context.Context, db *pgxpool.Pool, userID string) (*DBUser,
 		&user.EmailVerifiedAt,
 		&user.FirstName,
 		&user.LastName,
+		&user.Role,
 		&user.FailedLoginAttempts,
 		&user.LockedUntil,
 		&user.CreatedAt,
@@ -95,10 +98,10 @@ func GetUserByID(ctx context.Context, db *pgxpool.Pool, userID string) (*DBUser,
 func CreateUser(ctx context.Context, db *pgxpool.Pool, email, passwordHash string, firstName, lastName *string) (*DBUser, error) {
 	var user DBUser
 	err := db.QueryRow(ctx, `
-		INSERT INTO users (email, password_hash, first_name, last_name)
-		VALUES ($1, $2, $3, $4)
+		INSERT INTO users (email, password_hash, first_name, last_name, role)
+		VALUES ($1, $2, $3, $4, 'user')
 		RETURNING id, email, password_hash, email_verified_at, 
-		          first_name, last_name,
+		          first_name, last_name, role,
 		          failed_login_attempts, locked_until, created_at, updated_at
 	`, email, passwordHash, firstName, lastName).Scan(
 		&user.ID,
@@ -107,6 +110,7 @@ func CreateUser(ctx context.Context, db *pgxpool.Pool, email, passwordHash strin
 		&user.EmailVerifiedAt,
 		&user.FirstName,
 		&user.LastName,
+		&user.Role,
 		&user.FailedLoginAttempts,
 		&user.LockedUntil,
 		&user.CreatedAt,
@@ -149,7 +153,7 @@ func UpdateUser(ctx context.Context, db *pgxpool.Pool, userID string, firstName,
 		    last_name = COALESCE($2, last_name)
 		WHERE id = $3
 		RETURNING id, email, password_hash, email_verified_at, 
-		          first_name, last_name,
+		          first_name, last_name, role,
 		          failed_login_attempts, locked_until, created_at, updated_at
 	`, firstName, lastName, userID).Scan(
 		&user.ID,
@@ -158,6 +162,7 @@ func UpdateUser(ctx context.Context, db *pgxpool.Pool, userID string, firstName,
 		&user.EmailVerifiedAt,
 		&user.FirstName,
 		&user.LastName,
+		&user.Role,
 		&user.FailedLoginAttempts,
 		&user.LockedUntil,
 		&user.CreatedAt,

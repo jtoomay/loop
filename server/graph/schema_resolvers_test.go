@@ -139,6 +139,7 @@ func TestMeResolver(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, email, user.Email)
 	assert.Equal(t, dbUser.ID, user.ID)
+	assert.Equal(t, model.UserRoleUser, user.Role) // Default role should be USER
 
 	// Test without auth (should fail)
 	_, err = resolver.Query().Me(ctx)
@@ -424,4 +425,204 @@ func TestLogoutResolver(t *testing.T) {
 	err = tokens.Scan(&count)
 	require.NoError(t, err)
 	assert.Equal(t, 0, count)
+}
+
+func TestAdminQueries(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration tests in short mode")
+	}
+
+	resolver, cleanup := setupTestResolver(t)
+	defer cleanup()
+
+	ctx := context.Background()
+	password := "password123"
+
+	// Create admin user
+	adminEmail := "admin@example.com"
+	_, err := resolver.Mutation().Signup(ctx, adminEmail, password)
+	require.NoError(t, err)
+
+	// Get admin user and set role
+	dbAdmin, err := auth.GetUserByEmail(ctx, resolver.DB, adminEmail)
+	require.NoError(t, err)
+	err = auth.UpdateUserRole(ctx, resolver.DB, dbAdmin.ID, "admin")
+	require.NoError(t, err)
+
+	// Create regular users
+	_, err = resolver.Mutation().Signup(ctx, "user1@example.com", password)
+	require.NoError(t, err)
+	_, err = resolver.Mutation().Signup(ctx, "user2@example.com", password)
+	require.NoError(t, err)
+
+	// Set up admin context
+	adminUser := &auth.User{ID: dbAdmin.ID}
+	adminCtx := context.WithValue(ctx, auth.UserKey, adminUser)
+	adminCtx = context.WithValue(adminCtx, auth.DBKey, resolver.DB)
+
+	// Test AllUsers query
+	limit := int32(10)
+	offset := int32(0)
+	usersConn, err := resolver.Query().AllUsers(adminCtx, &limit, &offset)
+	require.NoError(t, err)
+	assert.GreaterOrEqual(t, len(usersConn.Users), 3) // At least admin + 2 users
+	assert.GreaterOrEqual(t, usersConn.TotalCount, 3)
+
+	// Verify all users have role field
+	for _, u := range usersConn.Users {
+		assert.NotNil(t, u.Role)
+		assert.Contains(t, []model.UserRole{model.UserRoleUser, model.UserRoleAdmin}, u.Role)
+	}
+
+	// Test User query (get specific user)
+	regularUser, err := auth.GetUserByEmail(ctx, resolver.DB, "user1@example.com")
+	require.NoError(t, err)
+	user, err := resolver.Query().User(adminCtx, regularUser.ID)
+	require.NoError(t, err)
+	assert.Equal(t, "user1@example.com", user.Email)
+	assert.Equal(t, model.UserRoleUser, user.Role)
+
+	// Test SystemStats query
+	stats, err := resolver.Query().SystemStats(adminCtx)
+	require.NoError(t, err)
+	assert.GreaterOrEqual(t, stats.TotalUsers, int32(3))
+	assert.GreaterOrEqual(t, stats.AdminUsers, int32(1))
+	assert.GreaterOrEqual(t, stats.VerifiedUsers, int32(0))
+	assert.GreaterOrEqual(t, stats.LockedUsers, int32(0))
+
+	// Test that non-admin cannot access admin queries
+	regularUserEmail := "user1@example.com"
+	regularDBUser, err := auth.GetUserByEmail(ctx, resolver.DB, regularUserEmail)
+	require.NoError(t, err)
+	regularAuthUser := &auth.User{ID: regularDBUser.ID}
+	regularCtx := context.WithValue(ctx, auth.UserKey, regularAuthUser)
+	regularCtx = context.WithValue(regularCtx, auth.DBKey, resolver.DB)
+
+	limit2 := int32(10)
+	offset2 := int32(0)
+	_, err = resolver.Query().AllUsers(regularCtx, &limit2, &offset2)
+	assert.Error(t, err)
+
+	_, err = resolver.Query().SystemStats(regularCtx)
+	assert.Error(t, err)
+}
+
+func TestAdminMutations(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration tests in short mode")
+	}
+
+	resolver, cleanup := setupTestResolver(t)
+	defer cleanup()
+
+	ctx := context.Background()
+	password := "password123"
+
+	// Create admin user
+	adminEmail := "adminmut@example.com"
+	_, err := resolver.Mutation().Signup(ctx, adminEmail, password)
+	require.NoError(t, err)
+
+	dbAdmin, err := auth.GetUserByEmail(ctx, resolver.DB, adminEmail)
+	require.NoError(t, err)
+	err = auth.UpdateUserRole(ctx, resolver.DB, dbAdmin.ID, "admin")
+	require.NoError(t, err)
+
+	// Create regular user
+	targetEmail := "target@example.com"
+	_, err = resolver.Mutation().Signup(ctx, targetEmail, password)
+	require.NoError(t, err)
+
+	targetUser, err := auth.GetUserByEmail(ctx, resolver.DB, targetEmail)
+	require.NoError(t, err)
+
+	// Set up admin context
+	adminUser := &auth.User{ID: dbAdmin.ID}
+	adminCtx := context.WithValue(ctx, auth.UserKey, adminUser)
+	adminCtx = context.WithValue(adminCtx, auth.DBKey, resolver.DB)
+
+	// Test UpdateUserRole
+	updatedUser, err := resolver.Mutation().UpdateUserRole(adminCtx, targetUser.ID, model.UserRoleAdmin)
+	require.NoError(t, err)
+	assert.Equal(t, model.UserRoleAdmin, updatedUser.Role)
+
+	// Verify in database
+	dbUser, err := auth.GetUserByID(ctx, resolver.DB, targetUser.ID)
+	require.NoError(t, err)
+	assert.Equal(t, "admin", dbUser.Role)
+
+	// Test LockUser
+	duration := int32(60)
+	locked, err := resolver.Mutation().LockUser(adminCtx, targetUser.ID, &duration)
+	require.NoError(t, err)
+	assert.True(t, locked)
+
+	// Verify user is locked
+	lockedDBUser, err := auth.GetUserByID(ctx, resolver.DB, targetUser.ID)
+	require.NoError(t, err)
+	assert.True(t, lockedDBUser.IsAccountLocked())
+
+	// Test UnlockUser
+	unlocked, err := resolver.Mutation().UnlockUser(adminCtx, targetUser.ID)
+	require.NoError(t, err)
+	assert.True(t, unlocked)
+
+	// Verify user is unlocked
+	unlockedDBUser, err := auth.GetUserByID(ctx, resolver.DB, targetUser.ID)
+	require.NoError(t, err)
+	assert.False(t, unlockedDBUser.IsAccountLocked())
+
+	// Test RevokeUserTokens
+	// First create some refresh tokens
+	_, err = auth.CreateRefreshToken(ctx, resolver.DB, targetUser.ID)
+	require.NoError(t, err)
+	_, err = auth.CreateRefreshToken(ctx, resolver.DB, targetUser.ID)
+	require.NoError(t, err)
+
+	revoked, err := resolver.Mutation().RevokeUserTokens(adminCtx, targetUser.ID)
+	require.NoError(t, err)
+	assert.True(t, revoked)
+
+	// Verify tokens are revoked
+	var count int
+	err = resolver.DB.QueryRow(ctx, `
+		SELECT COUNT(*) FROM refresh_tokens
+		WHERE user_id = $1 AND revoked_at IS NULL
+	`, targetUser.ID).Scan(&count)
+	require.NoError(t, err)
+	assert.Equal(t, 0, count)
+
+	// Test DeleteUser
+	deleted, err := resolver.Mutation().DeleteUser(adminCtx, targetUser.ID)
+	require.NoError(t, err)
+	assert.True(t, deleted)
+
+	// Verify user is deleted
+	_, err = auth.GetUserByID(ctx, resolver.DB, targetUser.ID)
+	assert.Error(t, err)
+
+	// Test that non-admin cannot access admin mutations
+	regularUserEmail := "regular@example.com"
+	_, err = resolver.Mutation().Signup(ctx, regularUserEmail, password)
+	require.NoError(t, err)
+
+	regularDBUser, err := auth.GetUserByEmail(ctx, resolver.DB, regularUserEmail)
+	require.NoError(t, err)
+	regularAuthUser := &auth.User{ID: regularDBUser.ID}
+	regularCtx := context.WithValue(ctx, auth.UserKey, regularAuthUser)
+	regularCtx = context.WithValue(regularCtx, auth.DBKey, resolver.DB)
+
+	// Create another user to test against
+	testEmail := "test@example.com"
+	_, err = resolver.Mutation().Signup(ctx, testEmail, password)
+	require.NoError(t, err)
+	testUser, err := auth.GetUserByEmail(ctx, resolver.DB, testEmail)
+	require.NoError(t, err)
+
+	_, err = resolver.Mutation().UpdateUserRole(regularCtx, testUser.ID, model.UserRoleAdmin)
+	assert.Error(t, err)
+
+	duration2 := int32(60)
+	_, err = resolver.Mutation().LockUser(regularCtx, testUser.ID, &duration2)
+	assert.Error(t, err)
 }

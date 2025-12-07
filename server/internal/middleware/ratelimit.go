@@ -27,7 +27,7 @@ func init() {
 func RateLimitHTTP(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Get client IP
-		ip := getClientIP(r)
+		ip := getClientIPFromRequest(r)
 
 		// Check rate limit
 		limiterCtx, err := generalLimiter.Get(r.Context(), ip)
@@ -53,21 +53,4 @@ func RateLimitHTTP(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r)
 	})
-}
-
-func getClientIP(r *http.Request) string {
-	// Check X-Forwarded-For header (for proxies/load balancers)
-	forwarded := r.Header.Get("X-Forwarded-For")
-	if forwarded != "" {
-		return forwarded
-	}
-
-	// Check X-Real-IP header
-	realIP := r.Header.Get("X-Real-IP")
-	if realIP != "" {
-		return realIP
-	}
-
-	// Fall back to RemoteAddr
-	return r.RemoteAddr
 }

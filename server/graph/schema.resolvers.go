@@ -475,6 +475,99 @@ func (r *mutationResolver) ChangePassword(ctx context.Context, oldPassword strin
 	return true, nil
 }
 
+// Helper function to convert DBUser to model.User
+func dbUserToModel(dbUser *auth.DBUser) *model.User {
+	var firstName, lastName *string
+	if dbUser.FirstName.Valid {
+		firstName = &dbUser.FirstName.String
+	}
+	if dbUser.LastName.Valid {
+		lastName = &dbUser.LastName.String
+	}
+
+	var role model.UserRole
+	if dbUser.Role == "admin" {
+		role = model.UserRoleAdmin
+	} else {
+		role = model.UserRoleUser
+	}
+
+	return &model.User{
+		ID:            dbUser.ID,
+		Email:         dbUser.Email,
+		EmailVerified: auth.IsEmailVerified(dbUser.EmailVerifiedAt),
+		FirstName:     firstName,
+		LastName:      lastName,
+		Role:          role,
+		Locked:        dbUser.IsAccountLocked(),
+		CreatedAt:     dbUser.CreatedAt.Format(time.RFC3339),
+	}
+}
+
+// RevokeUserTokens is the resolver for the revokeUserTokens field.
+func (r *mutationResolver) RevokeUserTokens(ctx context.Context, userID string) (bool, error) {
+	// Admin check is done by @admin directive
+	if err := auth.RevokeAllUserRefreshTokens(ctx, r.DB, userID); err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+// LockUser is the resolver for the lockUser field.
+func (r *mutationResolver) LockUser(ctx context.Context, userID string, durationMinutes *int32) (bool, error) {
+	// Admin check is done by @admin directive
+	duration := 60 // default 60 minutes
+	if durationMinutes != nil {
+		duration = int(*durationMinutes)
+	}
+
+	if err := auth.LockUser(ctx, r.DB, userID, duration); err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+// UnlockUser is the resolver for the unlockUser field.
+func (r *mutationResolver) UnlockUser(ctx context.Context, userID string) (bool, error) {
+	// Admin check is done by @admin directive
+	if err := auth.UnlockUser(ctx, r.DB, userID); err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+// DeleteUser is the resolver for the deleteUser field.
+func (r *mutationResolver) DeleteUser(ctx context.Context, userID string) (bool, error) {
+	// Admin check is done by @admin directive
+	err := auth.DeleteUser(ctx, r.DB, userID)
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+// UpdateUserRole is the resolver for the updateUserRole field.
+func (r *mutationResolver) UpdateUserRole(ctx context.Context, userID string, role model.UserRole) (*model.User, error) {
+	// Admin check is done by @admin directive
+	roleStr := "user"
+	if role == model.UserRoleAdmin {
+		roleStr = "admin"
+	}
+
+	if err := auth.UpdateUserRole(ctx, r.DB, userID, roleStr); err != nil {
+		return nil, err
+	}
+
+	// Fetch updated user
+	dbUser, err := auth.GetUserByID(ctx, r.DB, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return dbUserToModel(dbUser), nil
+}
+
 // Me is the resolver for the me field.
 func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
 	// Get user from context (set by auth middleware)
@@ -489,22 +582,100 @@ func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
 		return nil, err
 	}
 
-	// Extract firstName and lastName from database
-	var firstName, lastName *string
-	if dbUser.FirstName.Valid {
-		firstName = &dbUser.FirstName.String
-	}
-	if dbUser.LastName.Valid {
-		lastName = &dbUser.LastName.String
+	return dbUserToModel(dbUser), nil
+}
+
+// AllUsers is the resolver for the allUsers field.
+func (r *queryResolver) AllUsers(ctx context.Context, limit *int32, offset *int32) (*model.UsersConnection, error) {
+	// Admin check is done by @admin directive
+
+	limitVal := 50
+	if limit != nil {
+		limitVal = int(*limit)
+		if limitVal > 100 {
+			limitVal = 100 // Max 100 per page
+		}
 	}
 
-	return &model.User{
-		ID:            dbUser.ID,
-		Email:         dbUser.Email,
-		EmailVerified: auth.IsEmailVerified(dbUser.EmailVerifiedAt),
-		FirstName:     firstName,
-		LastName:      lastName,
+	offsetVal := 0
+	if offset != nil {
+		offsetVal = int(*offset)
+	}
+
+	users, err := auth.GetAllUsers(ctx, r.DB, limitVal, offsetVal)
+	if err != nil {
+		return nil, err
+	}
+
+	totalCount, err := auth.GetUserCount(ctx, r.DB)
+	if err != nil {
+		return nil, err
+	}
+
+	modelUsers := make([]*model.User, len(users))
+	for i, user := range users {
+		modelUsers[i] = dbUserToModel(user)
+	}
+
+	hasMore := offsetVal+limitVal < totalCount
+
+	return &model.UsersConnection{
+		Users:      modelUsers,
+		TotalCount: int32(totalCount),
+		HasMore:    hasMore,
 	}, nil
+}
+
+// User is the resolver for the user field.
+func (r *queryResolver) User(ctx context.Context, id string) (*model.User, error) {
+	// Admin check is done by @admin directive
+
+	dbUser, err := auth.GetUserByID(ctx, r.DB, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return dbUserToModel(dbUser), nil
+}
+
+// SystemStats is the resolver for the systemStats field.
+func (r *queryResolver) SystemStats(ctx context.Context) (*model.SystemStats, error) {
+	// Admin check is done by @admin directive
+
+	var stats model.SystemStats
+
+	// Total users
+	totalUsers, err := auth.GetUserCount(ctx, r.DB)
+	if err != nil {
+		return nil, err
+	}
+	stats.TotalUsers = int32(totalUsers)
+
+	// Verified users
+	err = r.DB.QueryRow(ctx, `
+		SELECT COUNT(*) FROM users WHERE email_verified_at IS NOT NULL
+	`).Scan(&stats.VerifiedUsers)
+	if err != nil {
+		return nil, err
+	}
+
+	// Locked users
+	err = r.DB.QueryRow(ctx, `
+		SELECT COUNT(*) FROM users WHERE locked_until > NOW()
+	`).Scan(&stats.LockedUsers)
+	if err != nil {
+		return nil, err
+	}
+
+	// Admin users
+	err = r.DB.QueryRow(ctx, `
+		SELECT COUNT(*) FROM users WHERE role = 'admin'
+	`).Scan(&stats.AdminUsers)
+	if err != nil {
+		return nil, err
+	}
+
+	return &stats, nil
 }
 
 // Mutation returns MutationResolver implementation.
