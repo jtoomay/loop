@@ -4,3 +4,5 @@
 2. File uploads (images, documents)
 3. Notifications system (in-app, push, email)
 4. More granular permissions (beyond admin/user)
+5. Production Readiness
+6. Github Actions
