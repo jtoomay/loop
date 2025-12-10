@@ -524,11 +524,6 @@ func (r *mutationResolver) UpdateUserRole(ctx context.Context, userID string, ro
 	return dbUserToModel(dbUser), nil
 }
 
-// SessionCheck is the resolver for the sessionCheck field.
-func (r *queryResolver) SessionCheck(ctx context.Context) (bool, error) {
-	return auth.IsAuthenticated(ctx), nil
-}
-
 // Me is the resolver for the me field.
 func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
 	// Get user from context (set by auth middleware)

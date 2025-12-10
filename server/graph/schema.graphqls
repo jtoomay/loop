@@ -2,7 +2,6 @@ directive @auth on FIELD_DEFINITION
 directive @admin on FIELD_DEFINITION
 
 type Query {
-  sessionCheck: Boolean!
   me: User @auth
   allUsers(limit: Int = 50, offset: Int = 0): UsersConnection! @admin
   user(id: ID!): User @admin

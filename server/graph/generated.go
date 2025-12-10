@@ -68,11 +68,10 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		AllUsers     func(childComplexity int, limit *int32, offset *int32) int
-		Me           func(childComplexity int) int
-		SessionCheck func(childComplexity int) int
-		SystemStats  func(childComplexity int) int
-		User         func(childComplexity int, id string) int
+		AllUsers    func(childComplexity int, limit *int32, offset *int32) int
+		Me          func(childComplexity int) int
+		SystemStats func(childComplexity int) int
+		User        func(childComplexity int, id string) int
 	}
 
 	Session struct {
@@ -123,7 +122,6 @@ type MutationResolver interface {
 	UpdateUserRole(ctx context.Context, userID string, role model.UserRole) (*model.User, error)
 }
 type QueryResolver interface {
-	SessionCheck(ctx context.Context) (bool, error)
 	Me(ctx context.Context) (*model.User, error)
 	AllUsers(ctx context.Context, limit *int32, offset *int32) (*model.UsersConnection, error)
 	User(ctx context.Context, id string) (*model.User, error)
@@ -322,12 +320,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Query.Me(childComplexity), true
-	case "Query.sessionCheck":
-		if e.complexity.Query.SessionCheck == nil {
-			break
-		}
-
-		return e.complexity.Query.SessionCheck(childComplexity), true
 	case "Query.systemStats":
 		if e.complexity.Query.SystemStats == nil {
 			break
@@ -1598,35 +1590,6 @@ func (ec *executionContext) fieldContext_Mutation_updateUserRole(ctx context.Con
 	if fc.Args, err = ec.field_Mutation_updateUserRole_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_sessionCheck(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Query_sessionCheck,
-		func(ctx context.Context) (any, error) {
-			return ec.resolvers.Query().SessionCheck(ctx)
-		},
-		nil,
-		ec.marshalNBoolean2bool,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_Query_sessionCheck(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Boolean does not have child fields")
-		},
 	}
 	return fc, nil
 }
@@ -4150,28 +4113,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
-		case "sessionCheck":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_sessionCheck(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx,
-					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "me":
 			field := field
 
