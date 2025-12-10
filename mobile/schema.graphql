@@ -43,7 +43,6 @@ type Mutation {
 }
 
 type Query {
-  sessionCheck: Boolean!
   me: User
   allUsers(limit: Int = 50, offset: Int = 0): UsersConnection!
   user(id: ID!): User

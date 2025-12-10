@@ -1,5 +1,6 @@
 import { SignInCardProps } from "@/app/join";
-import React, { useState } from "react";
+import { authService } from "@/lib/auth";
+import React, { useCallback, useState } from "react";
 import {
   Keyboard,
   Text,
@@ -8,11 +9,39 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
+import { graphql, useMutation } from "react-relay";
 
 export default function SignUp({ setSignUp }: SignInCardProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  const [commitSignup, isInFlight] = useMutation(graphql`
+    mutation SignUpMutation($email: String!, $password: String!) {
+      signup(email: $email, password: $password) {
+        accessToken
+        refreshToken
+      }
+    }
+  `);
+
+  const onSignup = useCallback(() => {
+    if (password !== confirmPassword)
+      return console.error("Passwords do not match");
+
+    commitSignup({
+      variables: {
+        email,
+        password,
+      },
+      onCompleted(response, error) {
+        const session = {
+          accessToken: response.signup.accessToken,
+        };
+        authService.setSession(session);
+      },
+    });
+  }, [commitSignup, confirmPassword, email, password]);
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View
