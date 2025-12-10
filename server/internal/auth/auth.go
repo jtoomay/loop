@@ -90,6 +90,14 @@ func GetUserFromContext(ctx context.Context) (*User, error) {
 	return user, nil
 }
 
+func IsAuthenticated(ctx context.Context) bool {
+	user, err := GetUserFromContext(ctx)
+	if err != nil {
+		return false
+	}
+	return user != nil
+}
+
 func Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
