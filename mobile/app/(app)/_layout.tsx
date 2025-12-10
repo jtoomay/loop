@@ -3,9 +3,9 @@ import { Redirect, Stack } from "expo-router";
 import React from "react";
 
 export default function Layout() {
-  const { id } = useSessionContext();
+  const { hasSession } = useSessionContext();
 
-  if (!id) return <Redirect href="/join" />;
+  if (!hasSession) return <Redirect href="/join" />;
 
   return (
     <Stack>

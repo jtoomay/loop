@@ -3,9 +3,9 @@ import { Redirect, Stack } from "expo-router";
 import React from "react";
 
 export default function Layout() {
-  const { id } = useSessionContext();
+  const { hasSession } = useSessionContext();
 
-  if (id) return <Redirect href="/(app)" />;
+  if (hasSession) return <Redirect href="/(app)" />;
   return (
     <Stack>
       <Stack.Screen name="index" options={{ headerShown: false }} />

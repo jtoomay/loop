@@ -55,6 +55,7 @@ export default function Login({ setSignUp }: SignInCardProps) {
                 padding: 10,
                 color: "black",
               }}
+              secureTextEntry={true}
               value={password}
               onChangeText={setPassword}
               placeholder="Enter your password..."

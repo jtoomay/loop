@@ -1,3 +1,7 @@
+directive @admin on FIELD_DEFINITION
+
+directive @auth on FIELD_DEFINITION
+
 """
 Directs the executor to defer this fragment when the `if` argument is true or undefined.
 """
@@ -24,19 +28,64 @@ type Mutation {
   signup(email: String!, password: String!): Session!
   login(email: String!, password: String!): Session!
   logout: Boolean!
+  refreshToken(refreshToken: String!): Session!
+  updateUser(input: UpdateUserInput!): User!
+  sendVerificationEmail: Boolean!
+  verifyEmail(token: String!): Boolean!
+  forgotPassword(email: String!): Boolean!
+  resetPassword(token: String!, newPassword: String!): Boolean!
+  changePassword(oldPassword: String!, newPassword: String!): Boolean!
+  revokeUserTokens(userId: ID!): Boolean!
+  lockUser(userId: ID!, durationMinutes: Int = 60): Boolean!
+  unlockUser(userId: ID!): Boolean!
+  deleteUser(userId: ID!): Boolean!
+  updateUserRole(userId: ID!, role: UserRole!): User!
 }
 
 type Query {
+  sessionCheck: Boolean!
   me: User
+  allUsers(limit: Int = 50, offset: Int = 0): UsersConnection!
+  user(id: ID!): User
+  systemStats: SystemStats!
 }
 
 type Session {
-  token: String!
+  accessToken: String!
+  refreshToken: String!
+}
+
+type SystemStats {
+  totalUsers: Int!
+  verifiedUsers: Int!
+  lockedUsers: Int!
+  adminUsers: Int!
+}
+
+input UpdateUserInput {
+  firstName: String
+  lastName: String
 }
 
 type User {
   id: ID!
   email: String!
-  name: String!
+  emailVerified: Boolean!
+  firstName: String
+  lastName: String
+  role: UserRole!
+  locked: Boolean!
+  createdAt: String!
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+type UsersConnection {
+  users: [User!]!
+  totalCount: Int!
+  hasMore: Boolean!
 }
 
