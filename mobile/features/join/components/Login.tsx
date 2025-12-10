@@ -1,5 +1,9 @@
 import { SignInCardProps } from "@/app/join";
-import React, { useState } from "react";
+import useSessionContext from "@/context/Session/useSessionContext";
+import { LoginMutation } from "@/gql/LoginMutation.graphql";
+import { authService } from "@/lib/auth";
+import { router } from "expo-router";
+import React, { useCallback, useState } from "react";
 import {
   Keyboard,
   Text,
@@ -8,10 +12,46 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
+import { graphql, useMutation } from "react-relay";
 
 export default function Login({ setSignUp }: SignInCardProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>();
+  const { setHasSession } = useSessionContext();
+
+  const [commitLogin, isInFlight] = useMutation<LoginMutation>(graphql`
+    mutation LoginMutation($email: String!, $password: String!) {
+      login(email: $email, password: $password) {
+        accessToken
+        refreshToken
+      }
+    }
+  `);
+
+  const onLogin = useCallback(() => {
+    commitLogin({
+      variables: {
+        email,
+        password,
+      },
+      onCompleted: (response, error) => {
+        if (error) return;
+
+        const onCompletedAsync = async () => {
+          await authService.setSession(response.login);
+          setHasSession(true);
+          router.replace("/(app)");
+        };
+
+        onCompletedAsync();
+      },
+      onError: (error) => {
+        setError(error.message);
+      },
+    });
+  }, [commitLogin, email, password, setHasSession]);
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View
@@ -22,6 +62,7 @@ export default function Login({ setSignUp }: SignInCardProps) {
           flex: 1,
         }}
       >
+        {error && <Text style={{ backgroundColor: "red" }}>{error}</Text>}
         <Text style={{ fontSize: 40, fontWeight: 700, color: "#e0f2fe" }}>
           Sign In
         </Text>
@@ -87,6 +128,7 @@ export default function Login({ setSignUp }: SignInCardProps) {
                 alignItems: "center",
                 width: "100%",
               }}
+              onPress={onLogin}
             >
               <Text style={{ fontWeight: 600, color: "#e0f2fe" }}>
                 Continue

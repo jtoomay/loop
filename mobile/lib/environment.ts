@@ -68,7 +68,7 @@ function isAuthError(errors: any[]): boolean {
   return errors.some(
     (error) =>
       error.extension?.code === "UNAUTHENTICATED" ||
-      error.message?.toLowerCae().includes("unauthorized") ||
-      error.message?.toLowerCae().includes("authentication")
+      error.message?.toLowerCase().includes("unauthorized") ||
+      error.message?.toLowerCase().includes("authentication")
   );
 }

@@ -1,5 +1,8 @@
 import { SignInCardProps } from "@/app/join";
+import useSessionContext from "@/context/Session/useSessionContext";
+import { SignUpMutation } from "@/gql/SignUpMutation.graphql";
 import { authService } from "@/lib/auth";
+import { router } from "expo-router";
 import React, { useCallback, useState } from "react";
 import {
   Keyboard,
@@ -15,8 +18,10 @@ export default function SignUp({ setSignUp }: SignInCardProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const { setHasSession } = useSessionContext();
 
-  const [commitSignup, isInFlight] = useMutation(graphql`
+  const [commitSignup, isInFlight] = useMutation<SignUpMutation>(graphql`
     mutation SignUpMutation($email: String!, $password: String!) {
       signup(email: $email, password: $password) {
         accessToken
@@ -35,13 +40,22 @@ export default function SignUp({ setSignUp }: SignInCardProps) {
         password,
       },
       onCompleted(response, error) {
-        const session = {
-          accessToken: response.signup.accessToken,
+        if (error) return;
+
+        const onCompletedAsync = async () => {
+          await authService.setSession(response.signup);
+          setHasSession(true);
+          router.replace("/(app)");
         };
-        authService.setSession(session);
+
+        onCompletedAsync();
+      },
+      onError(error) {
+        setError(error.message);
+        return console.error(error);
       },
     });
-  }, [commitSignup, confirmPassword, email, password]);
+  }, [commitSignup, confirmPassword, email, password, setHasSession]);
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View
@@ -67,6 +81,7 @@ export default function SignUp({ setSignUp }: SignInCardProps) {
             Join thousands of professionals already getting more done with less
             effort. Create your account in seconds and start today.
           </Text>
+          {error && <Text style={{ color: "red" }}>{error}</Text>}
         </View>
         <View
           style={{
@@ -146,6 +161,7 @@ export default function SignUp({ setSignUp }: SignInCardProps) {
                 alignItems: "center",
                 width: "100%",
               }}
+              onPress={onSignup}
             >
               <Text style={{ fontWeight: 600, color: "#e0f2fe" }}>
                 Continue

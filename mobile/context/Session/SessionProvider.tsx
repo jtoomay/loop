@@ -29,7 +29,7 @@ function useSession() {
   }, []);
 
   return useMemo(() => {
-    return { hasSession, isLoading };
+    return { hasSession, setHasSession, isLoading };
   }, [hasSession, isLoading]);
 }
 
