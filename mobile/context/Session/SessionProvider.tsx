@@ -1,7 +1,6 @@
-import { SessionProviderQuery } from "@/gql/SessionProviderQuery.graphql";
+import { authService } from "@/lib/auth";
 import { SplashScreen } from "expo-router";
-import React, { ReactNode, useMemo } from "react";
-import { graphql, useLazyLoadQuery } from "react-relay";
+import React, { ReactNode, useEffect, useMemo, useState } from "react";
 import SessionContext from "./SessionContext";
 
 export default function SessionProvider({ children }: SessionProviderProps) {
@@ -14,21 +13,24 @@ export default function SessionProvider({ children }: SessionProviderProps) {
 }
 
 function useSession() {
-  const { sessionCheck } = useLazyLoadQuery<SessionProviderQuery>(
-    graphql`
-      query SessionProviderQuery {
-        sessionCheck
-      }
-    `,
-    {}
-  );
+  const [hasSession, setHasSession] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Hide the splash screen
-  SplashScreen.hide();
+  useEffect(() => {
+    const checkSession = async () => {
+      const hasSession = await authService.isAuthenticated();
+      setHasSession(hasSession);
+      setIsLoading(false);
+      // Hide the splash screen
+      SplashScreen.hide();
+    };
+
+    checkSession();
+  }, []);
 
   return useMemo(() => {
-    return { hasSession: sessionCheck };
-  }, [sessionCheck]);
+    return { hasSession, isLoading };
+  }, [hasSession, isLoading]);
 }
 
 type SessionProviderProps = {

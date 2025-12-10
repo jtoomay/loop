@@ -74,7 +74,7 @@ export default function SignUp({ setSignUp }: SignInCardProps) {
               placeholder="Enter your password..."
               placeholderTextColor="black"
             />
-          </View>{" "}
+          </View>
           <View style={{ gap: 10 }}>
             <Text style={{ color: "#e0f2fe" }}>Password</Text>
             <TextInput
