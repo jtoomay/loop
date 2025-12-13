@@ -1,0 +1,82 @@
+import { FONT_STYLES, FONT_WEIGHTS, FONTS } from '@/design/common/constants'
+import { FontProps, TextColorProps } from '@/design/common/vars.type'
+import { useThemeContext } from '@/design/context/ThemeContext/useThemeContext'
+import { useMemo } from 'react'
+import { Text, TextProps, TextStyle } from 'react-native'
+
+export type TextBaseProps = TextProps & FontProps & TextColorProps
+
+export function TextBase({
+  bold,
+  italic,
+  medium,
+  light,
+  underline,
+  uppercase,
+  lowercase,
+  capitalize,
+  textAlign,
+  lineHeight,
+  color: colorProp,
+  font: fontProp,
+  fontSize,
+  style: styleProp,
+  children,
+  ...props
+}: TextBaseProps) {
+  const theme = useThemeContext()
+  const color = useMemo(() => (colorProp ? theme[colorProp] : theme.fg), [colorProp, theme])
+
+  const font = useMemo(() => (fontProp ? FONTS[fontProp] : FONTS.base), [fontProp])
+
+  const style: TextStyle = useMemo(() => {
+    const s: TextStyle = {
+      ...font,
+      fontSize,
+      lineHeight,
+      textAlign,
+      color,
+      ...(styleProp ? (styleProp as TextStyle) : {}),
+    }
+
+    if (bold) {
+      s.fontWeight = FONT_WEIGHTS.bold
+    }
+
+    if (medium) {
+      s.fontWeight = FONT_WEIGHTS.medium
+    }
+
+    if (light) {
+      s.fontWeight = FONT_WEIGHTS.light
+    }
+
+    if (italic) {
+      s.fontStyle = FONT_STYLES.italic
+    }
+
+    if (underline) {
+      s.textDecorationLine = 'underline'
+    }
+
+    if (uppercase) {
+      s.textTransform = 'uppercase'
+    }
+
+    if (lowercase) {
+      s.textTransform = 'lowercase'
+    }
+
+    if (capitalize) {
+      s.textTransform = 'capitalize'
+    }
+
+    return s
+  }, [color, font, fontSize, lineHeight, textAlign, bold, medium, light, italic, underline, uppercase, lowercase, capitalize, styleProp])
+
+  return (
+    <Text {...props} style={style}>
+      {children}
+    </Text>
+  )
+}
