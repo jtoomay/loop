@@ -65,17 +65,11 @@ export default function SignUp({ setSignUp }: SignInCardProps) {
         <VStack gap={4} paddingX={6} paddingY={10}>
           <VStack gap={1}>
             <Label>Email</Label>
-            <Input value={email} onChangeText={setEmail} placeholder="Enter your email..." placeholderTextColor="black" />
+            <Input value={email} onChangeText={setEmail} placeholder="Enter your email..." />
           </VStack>
           <VStack gap={1}>
             <Label>Password</Label>
-            <Input
-              value={password}
-              onChangeText={setPassword}
-              placeholder="Enter your password..."
-              placeholderTextColor="black"
-              secureTextEntry
-            />
+            <Input value={password} onChangeText={setPassword} placeholder="Enter your password..." secureTextEntry />
           </VStack>
           <VStack gap={1}>
             <Label>Confirm Password</Label>
