@@ -1,38 +1,32 @@
-import { SignInCardProps } from "@/app/join";
-import useSessionContext from "@/context/Session/useSessionContext";
-import { SignUpMutation } from "@/gql/SignUpMutation.graphql";
-import { authService } from "@/lib/auth";
-import { router } from "expo-router";
-import React, { useCallback, useState } from "react";
-import {
-  Keyboard,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View,
-} from "react-native";
-import { graphql, useMutation } from "react-relay";
+import { SignInCardProps } from '@/app/join'
+import useSessionContext from '@/context/Session/useSessionContext'
+import { Box, VStack } from '@/design/layout'
+import { ButtonText, Headline, Label, P } from '@/design/text'
+import { SignUpMutation } from '@/gql/SignUpMutation.graphql'
+import { authService } from '@/lib/auth'
+import { router } from 'expo-router'
+import { useCallback, useState } from 'react'
+import { Keyboard, TextInput, TouchableOpacity, TouchableWithoutFeedback } from 'react-native'
+import { graphql, useMutation } from 'react-relay'
 
 export default function SignUp({ setSignUp }: SignInCardProps) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const { setHasSession } = useSessionContext();
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const { setHasSession } = useSessionContext()
 
-  const [commitSignup, isInFlight] = useMutation<SignUpMutation>(graphql`
+  const [commitSignup] = useMutation<SignUpMutation>(graphql`
     mutation SignUpMutation($email: String!, $password: String!) {
       signup(email: $email, password: $password) {
         accessToken
         refreshToken
       }
     }
-  `);
+  `)
 
   const onSignup = useCallback(() => {
-    if (password !== confirmPassword)
-      return console.error("Passwords do not match");
+    if (password !== confirmPassword) return console.error('Passwords do not match')
 
     commitSignup({
       variables: {
@@ -40,141 +34,100 @@ export default function SignUp({ setSignUp }: SignInCardProps) {
         password,
       },
       onCompleted(response, error) {
-        if (error) return;
+        if (error) return
 
         const onCompletedAsync = async () => {
-          await authService.setSession(response.signup);
-          setHasSession(true);
-          router.replace("/(app)");
-        };
+          await authService.setSession(response.signup)
+          setHasSession(true)
+          router.replace('/(app)')
+        }
 
-        onCompletedAsync();
+        onCompletedAsync()
       },
       onError(error) {
-        setError(error.message);
-        return console.error(error);
+        setError(error.message)
+        return console.error(error)
       },
-    });
-  }, [commitSignup, confirmPassword, email, password, setHasSession]);
+    })
+  }, [commitSignup, confirmPassword, email, password, setHasSession])
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <View
-        style={{
-          alignItems: "center",
-          marginTop: "50%",
-          width: "100%",
-          flex: 1,
-        }}
-      >
-        <View
-          style={{
-            alignItems: "center",
-            paddingLeft: 50,
-            paddingRight: 50,
-            gap: 20,
-          }}
-        >
-          <Text style={{ fontSize: 40, fontWeight: 700, color: "#e0f2fe" }}>
-            Sign Up
-          </Text>
-          <Text style={{ fontSize: 15, color: "#e0f2fe", textAlign: "center" }}>
-            Join thousands of professionals already getting more done with less
-            effort. Create your account in seconds and start today.
-          </Text>
-          {error && <Text style={{ color: "red" }}>{error}</Text>}
-        </View>
-        <View
-          style={{
-            marginTop: 25,
-            width: "100%",
-            flex: 1,
-            padding: 50,
-            gap: 50,
-          }}
-        >
-          <View style={{ gap: 15 }}>
-            <View style={{ gap: 10 }}>
-              <Text style={{ color: "#e0f2fe" }}>Email</Text>
-              <TextInput
-                style={{
-                  width: "100%",
-                  backgroundColor: "#e0f2fe",
-                  height: 45,
-                  borderRadius: 10,
-                  padding: 10,
-                  color: "black",
-                }}
-                value={email}
-                onChangeText={setEmail}
-                placeholder="Enter your email..."
-                placeholderTextColor="black"
-              />
-            </View>
-            <View style={{ gap: 10 }}>
-              <Text style={{ color: "#e0f2fe" }}>Password</Text>
-              <TextInput
-                style={{
-                  width: "100%",
-                  backgroundColor: "#e0f2fe",
-                  height: 45,
-                  borderRadius: 10,
-                  padding: 10,
-                  color: "black",
-                }}
-                value={password}
-                onChangeText={setPassword}
-                placeholder="Enter your password..."
-                placeholderTextColor="black"
-              />
-            </View>
-            <View style={{ gap: 10 }}>
-              <Text style={{ color: "#e0f2fe" }}>Password</Text>
-              <TextInput
-                style={{
-                  width: "100%",
-                  backgroundColor: "#e0f2fe",
-                  height: 45,
-                  borderRadius: 10,
-                  padding: 10,
-                  color: "black",
-                }}
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                placeholder="Confirm your password..."
-                placeholderTextColor="black"
-              />
-            </View>
-          </View>
-          <View
-            style={{
-              gap: 10,
-              justifyContent: "center",
-              alignItems: "center",
-              marginTop: "auto",
-            }}
-          >
-            <TouchableOpacity
+      <VStack alignItems="center" flexGrow={1}>
+        <VStack gap={4} padding={10} marginTop={10} alignItems="center">
+          <Headline>Sign Up</Headline>
+          <P>Join thousands of professionals already getting more done with less effort. Create your account in seconds and start today.</P>
+          {error && <P color="error">{error}</P>}
+        </VStack>
+        <VStack gap={4} padding={10} width="100%">
+          <VStack gap={1} width="100%">
+            <Label>Email</Label>
+            <TextInput
               style={{
-                backgroundColor: "#0ea5e9",
-                padding: 15,
+                width: '100%',
+                backgroundColor: '#e0f2fe',
+                height: 45,
                 borderRadius: 10,
-                alignItems: "center",
-                width: "100%",
+                padding: 10,
+                color: 'black',
               }}
-              onPress={onSignup}
-            >
-              <Text style={{ fontWeight: 600, color: "#e0f2fe" }}>
+              value={email}
+              onChangeText={setEmail}
+              placeholder="Enter your email..."
+              placeholderTextColor="black"
+            />
+          </VStack>
+          <VStack gap={1} width="100%">
+            <Label>Password</Label>
+            <TextInput
+              style={{
+                width: '100%',
+                backgroundColor: '#e0f2fe',
+                height: 45,
+                borderRadius: 10,
+                padding: 10,
+                color: 'black',
+              }}
+              value={password}
+              onChangeText={setPassword}
+              placeholder="Enter your password..."
+              placeholderTextColor="black"
+              secureTextEntry
+            />
+          </VStack>
+          <VStack gap={1} width="100%">
+            <Label>Confirm Password</Label>
+            <TextInput
+              style={{
+                width: '100%',
+                backgroundColor: '#e0f2fe',
+                height: 45,
+                borderRadius: 10,
+                padding: 10,
+                color: 'black',
+              }}
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              placeholder="Confirm your password..."
+              placeholderTextColor="black"
+              secureTextEntry
+            />
+          </VStack>
+        </VStack>
+        <VStack gap={3} justifyContent="center" alignItems="center" padding={10} style={{ marginTop: 'auto' }}>
+          <TouchableOpacity onPress={onSignup} style={{ width: '100%' }}>
+            <Box bg="primary" padding={4} alignItems="center" width="100%" borderRadius={10}>
+              <ButtonText color="fg" medium>
                 Continue
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setSignUp(false)}>
-              <Text style={{ color: "#e0f2fe" }}>
-                Already have an account? Log In
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
+              </ButtonText>
+            </Box>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setSignUp(false)}>
+            <P color="fg" medium>
+              Already have an account? Log In
+            </P>
+          </TouchableOpacity>
+        </VStack>
+      </VStack>
     </TouchableWithoutFeedback>
-  );
+  )
 }

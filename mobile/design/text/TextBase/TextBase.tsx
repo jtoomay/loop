@@ -1,5 +1,6 @@
 import { FONT_STYLES, FONT_WEIGHTS, FONTS } from '@/design/common/constants'
-import { FontProps, TextColorProps } from '@/design/common/vars.type'
+import { Colors, FontProps, TextColorProps, ThemeColors } from '@/design/common/vars.type'
+import { colors } from '@/design/context/ThemeContext/theme'
 import { useThemeContext } from '@/design/context/ThemeContext/useThemeContext'
 import { useMemo } from 'react'
 import { Text, TextProps, TextStyle } from 'react-native'
@@ -25,14 +26,23 @@ export function TextBase({
   ...props
 }: TextBaseProps) {
   const theme = useThemeContext()
-  const color = useMemo(() => (colorProp ? theme[colorProp] : theme.fg), [colorProp, theme])
+  const color = useMemo(() => {
+    if (!colorProp) return theme.fg
+    if (colorProp in theme) {
+      return theme[colorProp as ThemeColors]
+    }
+    if (colorProp in colors) {
+      return colors[colorProp as Colors]
+    }
+    return theme.fg
+  }, [colorProp, theme])
 
   const font = useMemo(() => (fontProp ? FONTS[fontProp] : FONTS.base), [fontProp])
 
   const style: TextStyle = useMemo(() => {
     const s: TextStyle = {
       ...font,
-      fontSize,
+      fontSize: fontSize ?? font.fontSize,
       lineHeight,
       textAlign,
       color,

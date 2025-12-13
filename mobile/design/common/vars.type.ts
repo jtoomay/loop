@@ -1,10 +1,43 @@
+import { DimensionValue } from 'react-native'
+
 export type ThemeVars = {
   Spacing: Spacing
-  Colors: ThemeColors & Colors
+  Colors: ThemeColors | Colors
   Font: Font
 }
 
-type Spacing = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10
+type Spacing =
+  | 1
+  | 2
+  | 3
+  | 4
+  | 5
+  | 6
+  | 7
+  | 8
+  | 9
+  | 10
+  | 11
+  | 12
+  | 13
+  | 14
+  | 15
+  | 16
+  | 17
+  | 18
+  | 19
+  | 20
+  | 21
+  | 22
+  | 23
+  | 24
+  | 25
+  | 26
+  | 27
+  | 28
+  | 29
+  | 30
+  | 32
 
 export type SpacingProps = {
   padding?: ThemeVars['Spacing']
@@ -32,6 +65,7 @@ export type FlexProps = {
   alignItems?: 'flex-start' | 'flex-end' | 'center' | 'stretch' | 'baseline'
   alignContent?: 'flex-start' | 'flex-end' | 'center' | 'stretch' | 'space-between' | 'space-around'
   alignSelf?: 'flex-start' | 'flex-end' | 'center' | 'stretch' | 'baseline'
+  flex?: number
   flexWrap?: 'nowrap' | 'wrap' | 'wrap-reverse'
   flexGrow?: number
   flexShrink?: number
@@ -115,6 +149,19 @@ export type BackgroundColorProps = {
   bg?: ThemeVars['Colors']
 }
 
+export type DimensionsProps = {
+  width?: DimensionValue
+  height?: DimensionValue
+}
+
+export type BorderRadiusProps = {
+  borderRadius?: number
+  borderTopLeftRadius?: number
+  borderTopRightRadius?: number
+  borderBottomLeftRadius?: number
+  borderBottomRightRadius?: number
+}
+
 export type TextColorProps = {
   color?: ThemeVars['Colors']
 }
@@ -132,9 +179,11 @@ export type FontProps = {
   | { bold: true; medium?: never; light?: never }
   | { medium: true; bold?: never; light?: never }
   | { light: true; bold?: never; medium?: never }
+  | { bold?: never; medium?: never; light?: never }
 ) &
   (
     | { uppercase: true; lowercase?: never; capitalize?: never }
     | { lowercase: true; uppercase?: never; capitalize?: never }
     | { capitalize: true; uppercase?: never; lowercase?: never }
+    | { uppercase?: never; lowercase?: never; capitalize?: never }
   )

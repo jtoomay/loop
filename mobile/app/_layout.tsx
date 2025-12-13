@@ -1,29 +1,31 @@
-import SessionProvider from "@/context/Session/SessionProvider";
-import useSessionContext from "@/context/Session/useSessionContext";
-import { environment } from "@/lib/environment";
-import { Slot, SplashScreen } from "expo-router";
-import React from "react";
-import { ActivityIndicator } from "react-native";
-import { RelayEnvironmentProvider } from "react-relay";
+import SessionProvider from '@/context/Session/SessionProvider'
+import useSessionContext from '@/context/Session/useSessionContext'
+import { ThemeProvider } from '@/design/context'
+import { environment } from '@/lib/environment'
+import { Slot, SplashScreen } from 'expo-router'
+import { ActivityIndicator } from 'react-native'
+import { RelayEnvironmentProvider } from 'react-relay'
 
-SplashScreen.preventAutoHideAsync();
+SplashScreen.preventAutoHideAsync()
 
 export default function _layout() {
   return (
     <RelayEnvironmentProvider environment={environment}>
       <SessionProvider>
-        <Root />
+        <ThemeProvider>
+          <Root />
+        </ThemeProvider>
       </SessionProvider>
     </RelayEnvironmentProvider>
-  );
+  )
 }
 
 function Root() {
-  const { isLoading } = useSessionContext();
+  const { isLoading } = useSessionContext()
 
   if (isLoading) {
-    return <ActivityIndicator />;
+    return <ActivityIndicator />
   }
 
-  return <Slot initialRouteName="(app)" />;
+  return <Slot initialRouteName="(app)" />
 }

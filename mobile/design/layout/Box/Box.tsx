@@ -1,10 +1,20 @@
 import { SPACING_MULTIPLIER } from '@/design/common/constants'
-import { BackgroundColorProps, FlexProps, MarginProps, SpacingProps } from '@/design/common/vars.type'
+import {
+  BackgroundColorProps,
+  BorderRadiusProps,
+  Colors,
+  DimensionsProps,
+  FlexProps,
+  MarginProps,
+  SpacingProps,
+  ThemeColors,
+} from '@/design/common/vars.type'
+import { colors } from '@/design/context/ThemeContext/theme'
 import { useThemeContext } from '@/design/context/ThemeContext/useThemeContext'
 import { useMemo } from 'react'
 import { View, ViewProps, ViewStyle } from 'react-native'
 
-export type BoxProps = ViewProps & SpacingProps & MarginProps & FlexProps & BackgroundColorProps
+export type BoxProps = ViewProps & SpacingProps & MarginProps & FlexProps & BackgroundColorProps & DimensionsProps & BorderRadiusProps
 
 export function Box({
   padding,
@@ -26,19 +36,36 @@ export function Box({
   alignItems,
   alignContent,
   alignSelf,
+  flex,
   flexWrap,
   flexGrow,
   flexShrink,
   flexBasis,
   gap,
   bg,
+  width,
+  height,
+  borderRadius,
+  borderTopLeftRadius,
+  borderTopRightRadius,
+  borderBottomLeftRadius,
+  borderBottomRightRadius,
   style: styleProp,
   children,
   ...props
 }: BoxProps) {
   const theme = useThemeContext()
-  const backgroundColor = bg ? theme[bg] : undefined
-  const style = useMemo(() => {
+  const backgroundColor = useMemo(() => {
+    if (!bg) return undefined
+    if (bg in theme) {
+      return theme[bg as ThemeColors]
+    }
+    if (bg in colors) {
+      return colors[bg as Colors]
+    }
+    return undefined
+  }, [bg, theme])
+  const style: ViewStyle = useMemo(() => {
     return {
       padding: padding ? padding * SPACING_MULTIPLIER : undefined,
       paddingX: paddingX ? paddingX * SPACING_MULTIPLIER : undefined,
@@ -63,10 +90,18 @@ export function Box({
       flexGrow,
       flexShrink,
       flexBasis,
+      flex,
       gap: gap ? gap * SPACING_MULTIPLIER : undefined,
       backgroundColor,
+      width,
+      height,
+      borderRadius,
+      borderTopLeftRadius,
+      borderTopRightRadius,
+      borderBottomLeftRadius,
+      borderBottomRightRadius,
       ...(styleProp ? (styleProp as ViewStyle) : {}),
-    }
+    } as ViewStyle
   }, [
     padding,
     paddingX,
@@ -87,12 +122,20 @@ export function Box({
     alignItems,
     alignContent,
     alignSelf,
+    flex,
     flexWrap,
     flexGrow,
     flexShrink,
     flexBasis,
     gap,
     backgroundColor,
+    width,
+    height,
+    borderRadius,
+    borderTopLeftRadius,
+    borderTopRightRadius,
+    borderBottomLeftRadius,
+    borderBottomRightRadius,
     styleProp,
   ])
 
