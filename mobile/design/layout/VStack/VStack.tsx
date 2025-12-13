@@ -15,7 +15,7 @@ export function VStack({ style: styleProps, reverse, children, ...props }: VStac
   }, [reverse, styleProps])
 
   return (
-    <Box {...props} style={style}>
+    <Box width="100%" {...props} style={style}>
       {children}
     </Box>
   )

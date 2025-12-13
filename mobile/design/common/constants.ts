@@ -1,11 +1,17 @@
-export const SPACING_MULTIPLIER = 4 as const
+export const SPACING_MULTIPLIER = 6 as const
+
+export const BUTTON_PADDING_COMPACT = 3 as const
+export const BUTTON_PADDING_DEFAULT = 4 as const
+
+export const INPUT_PADDING_DEFAULT = 3 as const
+export const INPUT_BORDER_RADIUS = 10 as const
 
 export const FONT_SIZES = {
   base: 16,
   label: 14,
   caption: 12,
   button: 16,
-  headline: 24,
+  headline: 36,
   subheadline: 20,
 } as const
 
@@ -39,7 +45,7 @@ export const FONTS = {
   },
   button: {
     fontSize: FONT_SIZES.button,
-    fontWeight: FONT_WEIGHTS.regular,
+    fontWeight: FONT_WEIGHTS.medium,
     fontStyle: FONT_STYLES.normal,
   },
   headline: {

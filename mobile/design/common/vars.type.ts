@@ -50,13 +50,13 @@ export type SpacingProps = {
 }
 
 export type MarginProps = {
-  margin?: ThemeVars['Spacing']
-  marginX?: ThemeVars['Spacing']
-  marginY?: ThemeVars['Spacing']
-  marginTop?: ThemeVars['Spacing']
-  marginBottom?: ThemeVars['Spacing']
-  marginLeft?: ThemeVars['Spacing']
-  marginRight?: ThemeVars['Spacing']
+  margin?: ThemeVars['Spacing'] | 'auto'
+  marginX?: ThemeVars['Spacing'] | 'auto'
+  marginY?: ThemeVars['Spacing'] | 'auto'
+  marginTop?: ThemeVars['Spacing'] | 'auto'
+  marginBottom?: ThemeVars['Spacing'] | 'auto'
+  marginLeft?: ThemeVars['Spacing'] | 'auto'
+  marginRight?: ThemeVars['Spacing'] | 'auto'
 }
 
 export type FlexProps = {
@@ -77,6 +77,7 @@ export type ThemeColors =
   | 'bg'
   | 'bgAlt'
   | 'bgMuted'
+  | 'inputBg'
   | 'fg'
   | 'fgAlt'
   | 'fgMuted'
@@ -160,6 +161,14 @@ export type BorderRadiusProps = {
   borderTopRightRadius?: number
   borderBottomLeftRadius?: number
   borderBottomRightRadius?: number
+}
+
+export type ButtonVariant = 'primary' | 'secondary' | 'ghost'
+
+export type ButtonVariantProps = {
+  variant?: ButtonVariant
+  compact?: boolean
+  inline?: boolean
 }
 
 export type TextColorProps = {
