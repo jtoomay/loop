@@ -18,7 +18,7 @@ export default function Layout() {
         headerBackButtonDisplayMode: 'minimal',
       }}
     >
-      <Stack.Screen name="index" />
+      <Stack.Screen name="(tabs)" />
       <Stack.Screen name="explore" options={{ headerShown: true }} />
       <Stack.Screen name="settings" options={{ presentation: 'modal' }} />
     </Stack>

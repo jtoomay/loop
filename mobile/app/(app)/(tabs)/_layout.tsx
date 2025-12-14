@@ -44,12 +44,6 @@ export default function Layout() {
           headerRight: ({ tintColor }) => <HeaderButton icon="menu" onPress={onSettingsPress} side="right" color={tintColor} />,
         }}
       />
-      <Tabs.Screen
-        name="settings"
-        options={{
-          title: 'Settings',
-        }}
-      />
     </Tabs>
   )
 }
