@@ -1,7 +1,7 @@
 import { SPACING_MULTIPLIER } from '@/design/common/constants'
 import { DimensionsProps, MarginProps } from '@/design/common/vars.type'
 import { useThemeContext } from '@/design/context/ThemeContext/useThemeContext'
-import { useMemo } from 'react'
+import { memo, useMemo } from 'react'
 import { View, ViewProps, ViewStyle } from 'react-native'
 
 export type DividerProps = ViewProps &
@@ -11,7 +11,7 @@ export type DividerProps = ViewProps &
     color?: string
   }
 
-export function Divider({
+export const Divider = memo(function Divider({
   direction = 'horizontal',
   color: colorProp,
   width,
@@ -47,4 +47,4 @@ export function Divider({
   }, [direction, width, height, color, margin, marginX, marginY, marginTop, marginBottom, marginLeft, marginRight, styleProp])
 
   return <View {...props} style={style} />
-}
+})

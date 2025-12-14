@@ -1,6 +1,6 @@
-import { VStack } from '@/design/layout'
-import Login from '@/features/join/components/Login'
+import { Screen, VStack } from '@/design/layout'
 import { Dispatch, memo, SetStateAction, useState } from 'react'
+import Login from './components/Login'
 import SignUp from './components/SignUp'
 
 export type SignInCardProps = {
@@ -10,9 +10,9 @@ export type SignInCardProps = {
 const JoinScreen = memo(function JoinScreen() {
   const [signUp, setSignUp] = useState(false)
   return (
-    <VStack bg="bg" flexGrow={1}>
-      {signUp ? <SignUp setSignUp={setSignUp} /> : <Login setSignUp={setSignUp} />}
-    </VStack>
+    <Screen safeArea>
+      <VStack flexGrow={1}>{signUp ? <SignUp setSignUp={setSignUp} /> : <Login setSignUp={setSignUp} />}</VStack>
+    </Screen>
   )
 })
 

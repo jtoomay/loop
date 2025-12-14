@@ -1,7 +1,7 @@
 import { BorderRadiusProps, DimensionsProps } from '@/design/common/vars.type'
 import { useThemeContext } from '@/design/context/ThemeContext/useThemeContext'
 import { LinearGradient } from 'expo-linear-gradient'
-import { useEffect, useMemo, useRef } from 'react'
+import { memo, useEffect, useMemo, useRef } from 'react'
 import { Animated, DimensionValue, StyleSheet, View, ViewStyle } from 'react-native'
 import { Box, BoxProps } from '../Box/Box'
 
@@ -19,7 +19,7 @@ const gradStart = { x: -1, y: 0.5 }
 const gradEnd = { x: 2, y: 0.5 }
 const gradLocations: [number, number, number] = [0.3, 0.5, 0.7]
 
-export function Skeleton({
+export const Skeleton = memo(function Skeleton({
   shape = 'rectangle',
   width,
   height,
@@ -128,7 +128,7 @@ export function Skeleton({
       </View>
     </Box>
   )
-}
+})
 
 const styles = StyleSheet.create({
   shimmer: {

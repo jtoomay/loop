@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { memo, useMemo } from 'react'
 import { ViewStyle } from 'react-native'
 import { Box, BoxProps } from '../Box/Box'
 
@@ -6,7 +6,7 @@ export type HStackProps = Omit<BoxProps, 'flexDirection'> & {
   reverse?: boolean
 }
 
-export function HStack({ style: styleProps, reverse, children, ...props }: HStackProps) {
+export const HStack = memo(function HStack({ style: styleProps, reverse, children, ...props }: HStackProps) {
   const style: ViewStyle = useMemo(() => {
     return {
       flexDirection: reverse ? 'row-reverse' : 'row',
@@ -19,4 +19,4 @@ export function HStack({ style: styleProps, reverse, children, ...props }: HStac
       {children}
     </Box>
   )
-}
+})

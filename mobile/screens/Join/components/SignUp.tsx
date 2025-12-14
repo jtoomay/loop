@@ -1,57 +1,27 @@
-import useSessionContext from '@/context/Session/useSessionContext'
 import { Button } from '@/design/buttons'
 import { Input } from '@/design/inputs'
 import { VStack } from '@/design/layout'
 import { Headline, Label, P, SubHeadline } from '@/design/text'
-import { SignUpMutation } from '@/gql/SignUpMutation.graphql'
-import { authService } from '@/lib/auth'
-import { router } from 'expo-router'
 import { useCallback, useState } from 'react'
 import { Keyboard, TouchableWithoutFeedback } from 'react-native'
-import { graphql, useMutation } from 'react-relay'
 import { SignInCardProps } from '../JoinScreen'
+import { useSignUp } from '../hooks/useSignUp'
 
 export default function SignUp({ setSignUp }: SignInCardProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const { setHasSession } = useSessionContext()
 
-  const [commitSignup] = useMutation<SignUpMutation>(graphql`
-    mutation SignUpMutation($email: String!, $password: String!) {
-      signup(email: $email, password: $password) {
-        accessToken
-        refreshToken
-      }
-    }
-  `)
+  const { handleSignup, isInFlight } = useSignUp({
+    onError: (error) => {
+      setError(error.message)
+    },
+  })
 
   const onSignup = useCallback(() => {
-    if (password !== confirmPassword) return console.error('Passwords do not match')
-
-    commitSignup({
-      variables: {
-        email,
-        password,
-      },
-      onCompleted(response, error) {
-        if (error) return
-
-        const onCompletedAsync = async () => {
-          await authService.setSession(response.signup)
-          setHasSession(true)
-          router.replace('/(app)')
-        }
-
-        onCompletedAsync()
-      },
-      onError(error) {
-        setError(error.message)
-        return console.error(error)
-      },
-    })
-  }, [commitSignup, confirmPassword, email, password, setHasSession])
+    handleSignup(email, password, confirmPassword)
+  }, [email, password, confirmPassword, handleSignup])
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -78,7 +48,9 @@ export default function SignUp({ setSignUp }: SignInCardProps) {
           </VStack>
         </VStack>
         <VStack gap={3} justifyContent="center" alignItems="center" paddingX={5} paddingBottom={5} marginTop="auto">
-          <Button onPress={onSignup}>Continue</Button>
+          <Button onPress={onSignup} disabled={isInFlight}>
+            Continue
+          </Button>
           <Button variant="ghost" inline onPress={() => setSignUp(false)}>
             <P color="fg" medium>
               Already have an account? Log In

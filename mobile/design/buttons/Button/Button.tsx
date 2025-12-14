@@ -2,7 +2,7 @@ import { BUTTON_PADDING_COMPACT, BUTTON_PADDING_DEFAULT, SPACING_MULTIPLIER } fr
 import { ButtonVariantProps, DimensionsProps, MarginProps, SpacingProps, ThemeColors } from '@/design/common/vars.type'
 import { useThemeContext } from '@/design/context/ThemeContext/useThemeContext'
 import { ButtonText } from '@/design/text'
-import { ReactNode, useMemo } from 'react'
+import { memo, ReactNode, useMemo } from 'react'
 import { TouchableOpacity, TouchableOpacityProps, ViewStyle } from 'react-native'
 
 export type ButtonProps = TouchableOpacityProps &
@@ -13,7 +13,7 @@ export type ButtonProps = TouchableOpacityProps &
     children: string | ReactNode
   }
 
-export function Button({
+export const Button = memo(function Button({
   padding,
   paddingX,
   paddingY,
@@ -131,4 +131,4 @@ export function Button({
       {content}
     </TouchableOpacity>
   )
-}
+})

@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<38611a254b51fdc8be3f2ee34462bc9a>>
+ * @generated SignedSource<<d987becd2d41fce44bf5ba29f2823626>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -9,16 +9,16 @@
 // @ts-nocheck
 
 import { ConcreteRequest } from 'relay-runtime';
-export type AppQuery$variables = Record<PropertyKey, never>;
-export type AppQuery$data = {
+export type HomeScreenQuery$variables = Record<PropertyKey, never>;
+export type HomeScreenQuery$data = {
   readonly me: {
     readonly email: string;
     readonly id: string;
   } | null | undefined;
 };
-export type AppQuery = {
-  response: AppQuery$data;
-  variables: AppQuery$variables;
+export type HomeScreenQuery = {
+  response: HomeScreenQuery$data;
+  variables: HomeScreenQuery$variables;
 };
 
 const node: ConcreteRequest = (function(){
@@ -54,7 +54,7 @@ return {
     "argumentDefinitions": [],
     "kind": "Fragment",
     "metadata": null,
-    "name": "AppQuery",
+    "name": "HomeScreenQuery",
     "selections": (v0/*: any*/),
     "type": "Query",
     "abstractKey": null
@@ -63,20 +63,20 @@ return {
   "operation": {
     "argumentDefinitions": [],
     "kind": "Operation",
-    "name": "AppQuery",
+    "name": "HomeScreenQuery",
     "selections": (v0/*: any*/)
   },
   "params": {
-    "cacheID": "2addfd4e67939c5b8ae3f3315dbdf60b",
+    "cacheID": "431139afd0e344a6cbeb951c0ffbfc3b",
     "id": null,
     "metadata": {},
-    "name": "AppQuery",
+    "name": "HomeScreenQuery",
     "operationKind": "query",
-    "text": "query AppQuery {\n  me {\n    id\n    email\n  }\n}\n"
+    "text": "query HomeScreenQuery {\n  me {\n    id\n    email\n  }\n}\n"
   }
 };
 })();
 
-(node as any).hash = "84969c80d50e585f444ba0cc3ae4cd97";
+(node as any).hash = "7e971e7bd9fe18675c1c0ca7a95d1140";
 
 export default node;

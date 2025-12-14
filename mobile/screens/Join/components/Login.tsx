@@ -1,54 +1,26 @@
-import useSessionContext from '@/context/Session/useSessionContext'
 import { Button } from '@/design/buttons'
 import { Input } from '@/design/inputs'
 import { VStack } from '@/design/layout'
 import { Headline, Label, P, SubHeadline } from '@/design/text'
-import { LoginMutation } from '@/gql/LoginMutation.graphql'
-import { authService } from '@/lib/auth'
-import { router } from 'expo-router'
 import { useCallback, useState } from 'react'
 import { Keyboard, TouchableWithoutFeedback } from 'react-native'
-import { graphql, useMutation } from 'react-relay'
 import { SignInCardProps } from '../JoinScreen'
+import { useLogin } from '../hooks/useLogin'
 
 export default function Login({ setSignUp }: SignInCardProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const { setHasSession } = useSessionContext()
 
-  const [commitLogin] = useMutation<LoginMutation>(graphql`
-    mutation LoginMutation($email: String!, $password: String!) {
-      login(email: $email, password: $password) {
-        accessToken
-        refreshToken
-      }
-    }
-  `)
+  const { handleLogin, isInFlight } = useLogin({
+    onError: (error) => {
+      setError(error.message)
+    },
+  })
 
   const onLogin = useCallback(() => {
-    commitLogin({
-      variables: {
-        email,
-        password,
-      },
-      onCompleted(response, error) {
-        if (error) return
-
-        const onCompletedAsync = async () => {
-          await authService.setSession(response.login)
-          setHasSession(true)
-          router.replace('/(app)')
-        }
-
-        onCompletedAsync()
-      },
-      onError(error) {
-        setError(error.message)
-        return console.error(error)
-      },
-    })
-  }, [commitLogin, email, password, setHasSession])
+    handleLogin(email, password)
+  }, [email, handleLogin, password])
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -71,7 +43,9 @@ export default function Login({ setSignUp }: SignInCardProps) {
           </VStack>
         </VStack>
         <VStack gap={3} justifyContent="center" alignItems="center" paddingX={5} paddingBottom={5} marginTop="auto">
-          <Button onPress={onLogin}>Continue</Button>
+          <Button onPress={onLogin} disabled={isInFlight}>
+            Continue
+          </Button>
           <Button variant="ghost" inline onPress={() => setSignUp(true)}>
             <P color="fg" medium>
               Don&apos;t have an account? Sign up

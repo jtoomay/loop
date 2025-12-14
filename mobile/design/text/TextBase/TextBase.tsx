@@ -2,12 +2,12 @@ import { FONT_STYLES, FONT_WEIGHTS, FONTS } from '@/design/common/constants'
 import { Colors, FontProps, TextColorProps, ThemeColors } from '@/design/common/vars.type'
 import { colors } from '@/design/context/ThemeContext/theme'
 import { useThemeContext } from '@/design/context/ThemeContext/useThemeContext'
-import { useMemo } from 'react'
+import { memo, useMemo } from 'react'
 import { Text, TextProps, TextStyle } from 'react-native'
 
 export type TextBaseProps = TextProps & FontProps & TextColorProps
 
-export function TextBase({
+export const TextBase = memo(function TextBase({
   bold,
   italic,
   medium,
@@ -89,4 +89,4 @@ export function TextBase({
       {children}
     </Text>
   )
-}
+})

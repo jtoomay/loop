@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<172f079bfba8af6772a290cf857a1713>>
+ * @generated SignedSource<<eaeb58c1a396caaf915a7adbf1cbf065>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -9,19 +9,19 @@
 // @ts-nocheck
 
 import { ConcreteRequest } from 'relay-runtime';
-export type LoginMutation$variables = {
+export type useLoginMutation$variables = {
   email: string;
   password: string;
 };
-export type LoginMutation$data = {
+export type useLoginMutation$data = {
   readonly login: {
     readonly accessToken: string;
     readonly refreshToken: string;
   };
 };
-export type LoginMutation = {
-  response: LoginMutation$data;
-  variables: LoginMutation$variables;
+export type useLoginMutation = {
+  response: useLoginMutation$data;
+  variables: useLoginMutation$variables;
 };
 
 const node: ConcreteRequest = (function(){
@@ -80,7 +80,7 @@ return {
     "argumentDefinitions": (v0/*: any*/),
     "kind": "Fragment",
     "metadata": null,
-    "name": "LoginMutation",
+    "name": "useLoginMutation",
     "selections": (v1/*: any*/),
     "type": "Mutation",
     "abstractKey": null
@@ -89,20 +89,20 @@ return {
   "operation": {
     "argumentDefinitions": (v0/*: any*/),
     "kind": "Operation",
-    "name": "LoginMutation",
+    "name": "useLoginMutation",
     "selections": (v1/*: any*/)
   },
   "params": {
-    "cacheID": "aed759e39cb740c64b23d66d636abad7",
+    "cacheID": "4afd5d17b4e5d8b14643ed1072233d45",
     "id": null,
     "metadata": {},
-    "name": "LoginMutation",
+    "name": "useLoginMutation",
     "operationKind": "mutation",
-    "text": "mutation LoginMutation(\n  $email: String!\n  $password: String!\n) {\n  login(email: $email, password: $password) {\n    accessToken\n    refreshToken\n  }\n}\n"
+    "text": "mutation useLoginMutation(\n  $email: String!\n  $password: String!\n) {\n  login(email: $email, password: $password) {\n    accessToken\n    refreshToken\n  }\n}\n"
   }
 };
 })();
 
-(node as any).hash = "63d3ee9b4ef7886279ea145a32ea8269";
+(node as any).hash = "080ab8ad87a762e54efc76ceada31f33";
 
 export default node;

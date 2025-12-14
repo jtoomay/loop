@@ -11,12 +11,12 @@ import {
 } from '@/design/common/vars.type'
 import { colors } from '@/design/context/ThemeContext/theme'
 import { useThemeContext } from '@/design/context/ThemeContext/useThemeContext'
-import { useMemo } from 'react'
+import { memo, useMemo } from 'react'
 import { View, ViewProps, ViewStyle } from 'react-native'
 
 export type BoxProps = ViewProps & SpacingProps & MarginProps & FlexProps & BackgroundColorProps & DimensionsProps & BorderRadiusProps
 
-export function Box({
+export const Box = memo(function Box({
   padding,
   paddingX,
   paddingY,
@@ -144,4 +144,4 @@ export function Box({
       {children}
     </View>
   )
-}
+})

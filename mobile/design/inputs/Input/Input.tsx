@@ -2,7 +2,7 @@ import { INPUT_BORDER_RADIUS, INPUT_PADDING_DEFAULT, SPACING_MULTIPLIER } from '
 import { BorderRadiusProps, Colors, DimensionsProps, MarginProps, SpacingProps, ThemeColors } from '@/design/common/vars.type'
 import { colors } from '@/design/context/ThemeContext/theme'
 import { useThemeContext } from '@/design/context/ThemeContext/useThemeContext'
-import { useMemo } from 'react'
+import { memo, useMemo } from 'react'
 import { TextInput, TextInputProps, TextStyle } from 'react-native'
 
 export type InputComponentProps = TextInputProps &
@@ -14,7 +14,7 @@ export type InputComponentProps = TextInputProps &
     textColor?: ThemeColors | Colors
   }
 
-export function Input({
+export const Input = memo(function Input({
   padding,
   paddingX,
   paddingY,
@@ -44,14 +44,14 @@ export function Input({
 }: InputComponentProps) {
   const theme = useThemeContext()
   const backgroundColor = useMemo(() => {
-    if (!bg) return theme.inputBg
+    if (!bg) return theme.bgAlt
     if (bg in theme) {
       return theme[bg as ThemeColors]
     }
     if (bg in colors) {
       return colors[bg as Colors]
     }
-    return theme.inputBg
+    return theme.bgAlt
   }, [bg, theme])
 
   const color = useMemo(() => {
@@ -137,4 +137,4 @@ export function Input({
   ])
 
   return <TextInput {...props} style={style} placeholderTextColor={placeholderTextColor} />
-}
+})
