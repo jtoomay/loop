@@ -52,6 +52,7 @@ export default function SignUp({ setSignUp }: SignInCardProps) {
       },
     })
   }, [commitSignup, confirmPassword, email, password, setHasSession])
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <VStack alignItems="center" flexGrow={1}>
