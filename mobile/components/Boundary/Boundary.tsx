@@ -7,7 +7,7 @@ type ErrorBoundaryState = {
 
 type ErrorBoundaryProps = {
   children: ReactNode
-  fallback?: ReactNode
+  errorFallback?: ReactNode
   errorComponent?: (error: Error) => ReactNode
   onError?: (error: Error, errorInfo: React.ErrorInfo) => void
 }
@@ -31,7 +31,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
       if (this.props.errorComponent) {
         return this.props.errorComponent(this.state.error)
       }
-      return this.props.fallback || null
+      return this.props.errorFallback || null
     }
 
     return this.props.children
@@ -40,15 +40,16 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 
 export type BoundaryProps = {
   children: ReactNode
-  fallback?: ReactNode
+  suspenseFallback?: ReactNode
+  errorFallback?: ReactNode
   errorComponent?: (error: Error) => ReactNode
   onError?: (error: Error, errorInfo: React.ErrorInfo) => void
 }
 
-export function Boundary({ children, fallback, errorComponent, onError }: BoundaryProps) {
+export function Boundary({ children, suspenseFallback, errorFallback, errorComponent, onError }: BoundaryProps) {
   return (
-    <ErrorBoundary fallback={fallback} errorComponent={errorComponent} onError={onError}>
-      <Suspense fallback={fallback}>{children}</Suspense>
+    <ErrorBoundary errorFallback={errorFallback} errorComponent={errorComponent} onError={onError}>
+      <Suspense fallback={suspenseFallback}>{children}</Suspense>
     </ErrorBoundary>
   )
 }
