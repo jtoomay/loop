@@ -23,26 +23,21 @@ const fetchQuery: FetchFunction = async (operation, variables) => {
 
     const json = await res.json()
 
-    //Check for unauthorized or authentication errors
-    if (res.status === 401 || (json.errors && isAuthError(json.errors))) {
-      // Try to refresh the token
-      const newSession = await authService.refreshAccessToken()
-
-      if (newSession) {
-        // Retry the request with the new token
-        return makeRequest(newSession.accessToken)
-      } else {
-        router.replace('/join')
-        // Refresh failed, user needs to login again
-        throw new Error('Authentication required')
-      }
-    }
-
-    // Check for GraphQL Errors
     if (json.errors) {
-      // Don't throw for auth errors if we already tried refreshing
-      if (isAuthError(json.errors)) {
-        throw new Error('Authentication required')
+      if (isUnauthenticatedError(json.errors)) {
+        if (token) {
+          const newSession = await authService.refreshAccessToken()
+
+          if (newSession) {
+            return makeRequest(newSession.accessToken)
+          } else {
+            router.replace('/join')
+            throw new Error('Authentication required')
+          }
+        } else {
+          router.replace('/join')
+          throw new Error('Unexpected error occurred')
+        }
       }
       throw new Error(json.errors[0].message)
     }
@@ -58,11 +53,6 @@ export const environment = new Environment({
   store: new Store(new RecordSource()),
 })
 
-function isAuthError(errors: any[]): boolean {
-  return errors.some(
-    (error) =>
-      error.extension?.code === 'UNAUTHENTICATED' ||
-      error.message?.toLowerCase().includes('unauthorized') ||
-      error.message?.toLowerCase().includes('authentication')
-  )
+function isUnauthenticatedError(errors: any[]): boolean {
+  return errors.some((error) => error.extension?.code === 'UNAUTHENTICATED')
 }

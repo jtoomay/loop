@@ -11,11 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/99designs/gqlgen/graphql"
 	"github.com/brightsidedeveloper/loop/graph/model"
 	"github.com/brightsidedeveloper/loop/internal/auth"
 	"github.com/brightsidedeveloper/loop/internal/validation"
-	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 // Signup is the resolver for the signup field.
@@ -23,35 +21,20 @@ func (r *mutationResolver) Signup(ctx context.Context, email string, password st
 	// Validate email format
 	email = strings.ToLower(strings.TrimSpace(email))
 	if err := validation.ValidateEmail(email); err != nil {
-		graphql.AddError(ctx, &gqlerror.Error{
-			Message: err.Error(),
-			Extensions: map[string]interface{}{
-				"code": "INVALID_INPUT",
-			},
-		})
+		AddInvalidInputError(ctx, err.Error())
 		return nil, err
 	}
 
 	// Validate password
 	if err := validation.ValidatePassword(password); err != nil {
-		graphql.AddError(ctx, &gqlerror.Error{
-			Message: err.Error(),
-			Extensions: map[string]interface{}{
-				"code": "INVALID_INPUT",
-			},
-		})
+		AddInvalidInputError(ctx, err.Error())
 		return nil, err
 	}
 
 	// Check if user already exists
 	existingUser, err := auth.GetUserByEmail(ctx, r.DB, email)
 	if err == nil && existingUser != nil {
-		graphql.AddError(ctx, &gqlerror.Error{
-			Message: "User with this email already exists",
-			Extensions: map[string]interface{}{
-				"code": "ALREADY_EXISTS",
-			},
-		})
+		AddAlreadyExistsError(ctx, "User with this email already exists")
 		return nil, errors.New("user already exists")
 	}
 	if err != nil && !errors.Is(err, auth.ErrInvalidPassword) {
@@ -69,12 +52,7 @@ func (r *mutationResolver) Signup(ctx context.Context, email string, password st
 	if err != nil {
 		// Check for unique constraint violation (PostgreSQL error code 23505)
 		if strings.Contains(err.Error(), "23505") || strings.Contains(err.Error(), "unique") {
-			graphql.AddError(ctx, &gqlerror.Error{
-				Message: "User with this email already exists",
-				Extensions: map[string]interface{}{
-					"code": "ALREADY_EXISTS",
-				},
-			})
+			AddAlreadyExistsError(ctx, "User with this email already exists")
 			return nil, errors.New("user already exists")
 		}
 		return nil, err
@@ -106,23 +84,14 @@ func (r *mutationResolver) Login(ctx context.Context, email string, password str
 	dbUser, err := auth.GetUserByEmail(ctx, r.DB, email)
 	if err != nil {
 		// Don't reveal if user exists - use same error for both cases
-		graphql.AddError(ctx, &gqlerror.Error{
-			Message: "Invalid email or password",
-			Extensions: map[string]interface{}{
-				"code": "UNAUTHENTICATED",
-			},
-		})
-		return nil, auth.ErrUnauthorized
+		// Use INVALID_CREDENTIALS for public auth endpoints (not UNAUTHENTICATED)
+		AddInvalidCredentialsError(ctx, "Invalid email or password")
+		return nil, errors.New("invalid credentials")
 	}
 
 	// Check if account is locked
 	if dbUser.IsAccountLocked() {
-		graphql.AddError(ctx, &gqlerror.Error{
-			Message: "Account is locked due to too many failed login attempts",
-			Extensions: map[string]interface{}{
-				"code": "ACCOUNT_LOCKED",
-			},
-		})
+		AddAccountLockedError(ctx, "Account is locked due to too many failed login attempts")
 		return nil, errors.New("account locked")
 	}
 
@@ -146,13 +115,9 @@ func (r *mutationResolver) Login(ctx context.Context, email string, password str
 			`, lockUntil, dbUser.ID)
 		}
 
-		graphql.AddError(ctx, &gqlerror.Error{
-			Message: "Invalid email or password",
-			Extensions: map[string]interface{}{
-				"code": "UNAUTHENTICATED",
-			},
-		})
-		return nil, auth.ErrUnauthorized
+		// Use INVALID_CREDENTIALS for public auth endpoints (not UNAUTHENTICATED)
+		AddInvalidCredentialsError(ctx, "Invalid email or password")
+		return nil, errors.New("invalid credentials")
 	}
 
 	// Reset failed login attempts on successful login
@@ -200,12 +165,7 @@ func (r *mutationResolver) RefreshToken(ctx context.Context, refreshToken string
 	// Validate the refresh token
 	rt, err := auth.ValidateRefreshToken(ctx, r.DB, refreshToken)
 	if err != nil {
-		graphql.AddError(ctx, &gqlerror.Error{
-			Message: "Invalid or expired refresh token",
-			Extensions: map[string]interface{}{
-				"code": "UNAUTHENTICATED",
-			},
-		})
+		AddUnauthenticatedError(ctx, "Invalid or expired refresh token")
 		return nil, auth.ErrUnauthorized
 	}
 
@@ -266,12 +226,7 @@ func (r *mutationResolver) SendVerificationEmail(ctx context.Context) (bool, err
 
 	// Check if already verified
 	if auth.IsEmailVerified(dbUser.EmailVerifiedAt) {
-		graphql.AddError(ctx, &gqlerror.Error{
-			Message: "Email is already verified",
-			Extensions: map[string]interface{}{
-				"code": "ALREADY_VERIFIED",
-			},
-		})
+		AddAlreadyVerifiedError(ctx, "Email is already verified")
 		return false, errors.New("email already verified")
 	}
 
@@ -295,12 +250,7 @@ func (r *mutationResolver) VerifyEmail(ctx context.Context, token string) (bool,
 	// Validate token
 	et, err := auth.ValidateEmailVerificationToken(ctx, r.DB, token)
 	if err != nil {
-		graphql.AddError(ctx, &gqlerror.Error{
-			Message: err.Error(),
-			Extensions: map[string]interface{}{
-				"code": "INVALID_TOKEN",
-			},
-		})
+		AddInvalidTokenError(ctx, err.Error())
 		return false, err
 	}
 
@@ -356,24 +306,14 @@ func (r *mutationResolver) ForgotPassword(ctx context.Context, email string) (bo
 func (r *mutationResolver) ResetPassword(ctx context.Context, token string, newPassword string) (bool, error) {
 	// Validate password
 	if err := validation.ValidatePassword(newPassword); err != nil {
-		graphql.AddError(ctx, &gqlerror.Error{
-			Message: err.Error(),
-			Extensions: map[string]interface{}{
-				"code": "INVALID_INPUT",
-			},
-		})
+		AddInvalidInputError(ctx, err.Error())
 		return false, err
 	}
 
 	// Validate token
 	prt, err := auth.ValidatePasswordResetToken(ctx, r.DB, token)
 	if err != nil {
-		graphql.AddError(ctx, &gqlerror.Error{
-			Message: err.Error(),
-			Extensions: map[string]interface{}{
-				"code": "INVALID_TOKEN",
-			},
-		})
+		AddInvalidTokenError(ctx, err.Error())
 		return false, err
 	}
 
@@ -411,12 +351,7 @@ func (r *mutationResolver) ChangePassword(ctx context.Context, oldPassword strin
 
 	// Validate new password length
 	if len(newPassword) < 8 {
-		graphql.AddError(ctx, &gqlerror.Error{
-			Message: "Password must be at least 8 characters long",
-			Extensions: map[string]interface{}{
-				"code": "INVALID_INPUT",
-			},
-		})
+		AddInvalidInputError(ctx, "Password must be at least 8 characters long")
 		return false, errors.New("password too short")
 	}
 
@@ -433,13 +368,9 @@ func (r *mutationResolver) ChangePassword(ctx context.Context, oldPassword strin
 	}
 
 	if !valid {
-		graphql.AddError(ctx, &gqlerror.Error{
-			Message: "Current password is incorrect",
-			Extensions: map[string]interface{}{
-				"code": "UNAUTHENTICATED",
-			},
-		})
-		return false, auth.ErrUnauthorized
+		// User is authenticated but provided wrong password - use INVALID_CREDENTIALS
+		AddInvalidCredentialsError(ctx, "Current password is incorrect")
+		return false, errors.New("invalid credentials")
 	}
 
 	// Hash new password

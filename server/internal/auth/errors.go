@@ -21,7 +21,7 @@ func Unauthorized(ctx context.Context, msg ...string) error {
 	}
 	graphql.AddError(ctx, &gqlerror.Error{
 		Message: text,
-		Extensions: map[string]interface{}{
+		Extensions: map[string]any{
 			"code": "UNAUTHENTICATED",
 		},
 	})
@@ -35,7 +35,7 @@ func Forbidden(ctx context.Context, msg ...string) error {
 	}
 	graphql.AddError(ctx, &gqlerror.Error{
 		Message: text,
-		Extensions: map[string]interface{}{
+		Extensions: map[string]any{
 			"code": "FORBIDDEN",
 		},
 	})

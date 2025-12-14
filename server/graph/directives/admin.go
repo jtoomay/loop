@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/brightsidedeveloper/loop/graph"
 	"github.com/brightsidedeveloper/loop/internal/auth"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 func AdminDirective(ctx context.Context, obj any, next graphql.Resolver) (res any, err error) {
@@ -19,12 +19,7 @@ func AdminDirective(ctx context.Context, obj any, next graphql.Resolver) (res an
 	// Check admin access (this will verify auth and admin status)
 	_, err = auth.RequireAdmin(ctx, db)
 	if err != nil {
-		graphql.AddError(ctx, &gqlerror.Error{
-			Message: "Admin access required",
-			Extensions: map[string]interface{}{
-				"code": "FORBIDDEN",
-			},
-		})
+		graph.AddForbiddenError(ctx, "Admin access required")
 		return nil, err
 	}
 
