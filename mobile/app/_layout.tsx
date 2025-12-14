@@ -1,5 +1,5 @@
 import { Boundary } from '@/components/Boundary'
-import { GlobalErrorComponent } from '@/components/Boundary/GlobalError'
+import { globalErrorComponent } from '@/components/Boundary/GlobalError'
 import SessionProvider from '@/context/Session/SessionProvider'
 import useSessionContext from '@/context/Session/useSessionContext'
 import { ThemeProvider } from '@/design/context'
@@ -15,7 +15,7 @@ export default function _layout() {
     <RelayEnvironmentProvider environment={environment}>
       <SessionProvider>
         <ThemeProvider>
-          <Boundary errorComponent={GlobalErrorComponent}>
+          <Boundary errorComponent={globalErrorComponent}>
             <Root />
           </Boundary>
         </ThemeProvider>

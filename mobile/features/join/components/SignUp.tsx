@@ -1,4 +1,3 @@
-import { SignInCardProps } from '@/app/join'
 import useSessionContext from '@/context/Session/useSessionContext'
 import { Button } from '@/design/buttons'
 import { Input } from '@/design/inputs'
@@ -10,6 +9,7 @@ import { router } from 'expo-router'
 import { useCallback, useState } from 'react'
 import { Keyboard, TouchableWithoutFeedback } from 'react-native'
 import { graphql, useMutation } from 'react-relay'
+import { SignInCardProps } from '../JoinScreen'
 
 export default function SignUp({ setSignUp }: SignInCardProps) {
   const [email, setEmail] = useState('')

@@ -1,6 +1,6 @@
 import { VStack } from '@/design/layout'
 import { Headline, SubHeadline } from '@/design/text'
-import { memo } from 'react'
+import { memo, ReactNode } from 'react'
 
 type GlobalErrorScreenProps = {
   error?: Error
@@ -17,6 +17,6 @@ export const GlobalError = memo(function GlobalErrorScreen({ error }: GlobalErro
   )
 })
 
-export function GlobalErrorComponent(error: Error) {
+export const globalErrorComponent = (error: Error): ReactNode => {
   return <GlobalError error={error} />
 }
