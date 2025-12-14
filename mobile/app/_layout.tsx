@@ -5,12 +5,13 @@ import useSessionContext from '@/context/Session/useSessionContext'
 import { ThemeProvider } from '@/design/context'
 import { environment } from '@/lib/environment'
 import { Slot, SplashScreen } from 'expo-router'
+import { memo } from 'react'
 import { ActivityIndicator } from 'react-native'
 import { RelayEnvironmentProvider } from 'react-relay'
 
 SplashScreen.preventAutoHideAsync()
 
-export default function _layout() {
+export default function EntryPoint() {
   return (
     <RelayEnvironmentProvider environment={environment}>
       <SessionProvider>
@@ -24,7 +25,7 @@ export default function _layout() {
   )
 }
 
-function Root() {
+const Root = memo(function Root() {
   const { isLoading } = useSessionContext()
 
   if (isLoading) {
@@ -32,4 +33,4 @@ function Root() {
   }
 
   return <Slot initialRouteName="(app)" />
-}
+})
