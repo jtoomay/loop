@@ -32,11 +32,9 @@ const fetchQuery: FetchFunction = async (operation, variables) => {
             return makeRequest(newSession.accessToken)
           } else {
             router.replace('/join')
-            throw new Error('Authentication required')
           }
         } else {
           router.replace('/join')
-          throw new Error('Unexpected error occurred')
         }
       }
       throw new Error(json.errors[0].message)
@@ -54,5 +52,5 @@ export const environment = new Environment({
 })
 
 function isUnauthenticatedError(errors: any[]): boolean {
-  return errors.some((error) => error.extension?.code === 'UNAUTHENTICATED')
+  return errors.some((error) => error.extensions?.code === 'UNAUTHENTICATED')
 }
