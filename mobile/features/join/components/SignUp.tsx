@@ -73,13 +73,7 @@ export default function SignUp({ setSignUp }: SignInCardProps) {
           </VStack>
           <VStack gap={1}>
             <Label>Confirm Password</Label>
-            <Input
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              placeholder="Confirm your password..."
-              placeholderTextColor="black"
-              secureTextEntry
-            />
+            <Input value={confirmPassword} onChangeText={setConfirmPassword} placeholder="Confirm your password..." secureTextEntry />
           </VStack>
         </VStack>
         <VStack gap={3} justifyContent="center" alignItems="center" paddingX={5} paddingBottom={5} marginTop="auto">

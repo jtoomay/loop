@@ -96,6 +96,7 @@ export type Colors =
   | 'gray40'
   | 'gray60'
   | 'gray80'
+  | 'gray90'
   | 'gray100'
   | 'blue5'
   | 'blue20'

@@ -8,6 +8,7 @@ export const colors: Record<Colors, string> = {
   gray40: '#d4d4d4',
   gray60: '#a3a3a3',
   gray80: '#737373',
+  gray90: '#404040',
   gray100: '#171717',
   // Blue scale (primary)
   blue5: '#eff6ff',
@@ -89,7 +90,7 @@ export const darkTheme: Record<ThemeColors, string> = {
   bgAlt: colors.gray80,
   fgAlt: colors.gray5,
   bgMuted: colors.gray60,
-  inputBg: colors.gray60,
+  inputBg: colors.gray90,
   fgMuted: colors.gray20,
   primary: colors.blue60,
   secondary: colors.blue40,
