@@ -59,6 +59,19 @@ export type MarginProps = {
   marginRight?: ThemeVars['Spacing'] | 'auto'
 }
 
+export type PositionProps = {
+  position?: 'absolute' | 'relative' | 'fixed' | 'sticky'
+  top?: ThemeVars['Spacing']
+  right?: ThemeVars['Spacing']
+  bottom?: ThemeVars['Spacing']
+  left?: ThemeVars['Spacing']
+  topRaw?: number
+  rightRaw?: number
+  bottomRaw?: number
+  leftRaw?: number
+  zIndex?: number
+}
+
 export type FlexProps = {
   flexDirection?: 'row' | 'column' | 'row-reverse' | 'column-reverse'
   justifyContent?: 'flex-start' | 'flex-end' | 'center' | 'space-between' | 'space-around' | 'space-evenly'
