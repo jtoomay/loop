@@ -1,6 +1,6 @@
 import { Button } from '@/design/buttons'
-import { Screen, VStack } from '@/design/layout'
-import { Headline, SubHeadline } from '@/design/text'
+import { Screen } from '@/design/layout'
+import { Headline } from '@/design/text'
 import { HomeScreenQuery } from '@/gql/HomeScreenQuery.graphql'
 import { router } from 'expo-router'
 import { memo, useCallback } from 'react'
@@ -24,12 +24,11 @@ const HomeScreen = memo(function HomeScreen() {
   }, [])
 
   return (
-    <Screen>
-      <SubHeadline>{me?.id}</SubHeadline>
-      <Headline>{me?.email}</Headline>
-      <VStack paddingTop={10}>
-        <Button onPress={onExplorePress}>Explore</Button>
-      </VStack>
+    <Screen paddingY={3} paddingX={2} gap={3}>
+      <Headline textAlign="center">{me?.email}</Headline>
+      <Button compact onPress={onExplorePress}>
+        Explore
+      </Button>
     </Screen>
   )
 })
