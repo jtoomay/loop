@@ -1,5 +1,14 @@
 import { BUTTON_PADDING_COMPACT, BUTTON_PADDING_DEFAULT, SPACING_MULTIPLIER } from '@/design/common/constants'
-import { ButtonVariantProps, DimensionsProps, MarginProps, SpacingProps, ThemeColors } from '@/design/common/vars.type'
+import {
+  BackgroundColorProps,
+  ButtonVariantProps,
+  Colors,
+  DimensionsProps,
+  MarginProps,
+  SpacingProps,
+  TextColorProps,
+  ThemeColors,
+} from '@/design/common/vars.type'
 import { useThemeContext } from '@/design/context/ThemeContext/useThemeContext'
 import { ButtonText } from '@/design/text'
 import { memo, ReactNode, useMemo } from 'react'
@@ -9,6 +18,8 @@ export type ButtonProps = TouchableOpacityProps &
   SpacingProps &
   MarginProps &
   DimensionsProps &
+  TextColorProps &
+  BackgroundColorProps &
   ButtonVariantProps & {
     children: string | ReactNode
   }
@@ -33,36 +44,38 @@ export const Button = memo(function Button({
   inline,
   width,
   height,
+  color,
+  bg,
   children,
   style: styleProp,
   ...props
 }: ButtonProps) {
   const theme = useThemeContext()
 
-  const { backgroundColor, textColor }: { backgroundColor: string; textColor: ThemeColors } = useMemo(() => {
+  const { backgroundColor, textColor }: { backgroundColor: string; textColor: ThemeColors | Colors } = useMemo(() => {
     switch (variant) {
       case 'primary':
         return {
-          backgroundColor: theme.primary,
-          textColor: 'fg',
+          backgroundColor: bg ?? theme.primary,
+          textColor: color ?? 'gray0',
         }
       case 'secondary':
         return {
-          backgroundColor: theme.secondary,
-          textColor: 'fg',
+          backgroundColor: bg ?? theme.bgMuted,
+          textColor: color ?? 'fg',
         }
       case 'ghost':
         return {
-          backgroundColor: 'transparent',
-          textColor: 'primary',
+          backgroundColor: bg ?? 'transparent',
+          textColor: color ?? 'primary',
         }
       default:
         return {
-          backgroundColor: theme.primary,
-          textColor: 'fg',
+          backgroundColor: bg ?? theme.primary,
+          textColor: color ?? 'gray0',
         }
     }
-  }, [variant, theme])
+  }, [variant, theme, bg, color])
 
   const basePadding = variant === 'ghost' ? 0 : compact ? BUTTON_PADDING_COMPACT : BUTTON_PADDING_DEFAULT
 

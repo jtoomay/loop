@@ -91,7 +91,7 @@ export const darkTheme: Record<ThemeColors, string> = {
   fg: colors.gray0,
   bgAlt: colors.gray95,
   fgAlt: colors.gray5,
-  bgMuted: colors.gray60,
+  bgMuted: colors.gray90,
   fgMuted: colors.gray20,
   primary: colors.blue60,
   secondary: colors.blue40,

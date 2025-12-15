@@ -8,7 +8,7 @@ const SettingsScreen = memo(function SettingsScreen() {
 
   return (
     <Screen paddingTop={4} paddingX={2}>
-      <Button onPress={onLogout} disabled={isInFlight}>
+      <Button variant="secondary" onPress={onLogout} disabled={isInFlight}>
         Logout
       </Button>
     </Screen>
