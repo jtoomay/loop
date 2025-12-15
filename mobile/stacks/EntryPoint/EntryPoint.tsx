@@ -6,7 +6,6 @@ import { ThemeProvider } from '@/design/context'
 import { environment } from '@/lib/environment'
 import { Slot, SplashScreen } from 'expo-router'
 import { memo } from 'react'
-import { ActivityIndicator } from 'react-native'
 import { RelayEnvironmentProvider } from 'react-relay'
 
 SplashScreen.preventAutoHideAsync()
@@ -15,7 +14,7 @@ const Root = memo(function Root() {
   const { isLoading } = useSessionContext()
 
   if (isLoading) {
-    return <ActivityIndicator />
+    return null
   }
 
   return <Slot initialRouteName="(app)" />
