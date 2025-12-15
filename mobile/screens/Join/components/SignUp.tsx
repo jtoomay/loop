@@ -26,7 +26,7 @@ export default function SignUp({ setSignUp }: SignInCardProps) {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <VStack alignItems="center" flexGrow={1}>
+      <VStack alignItems="center" flexGrow={1} position="relative">
         <VStack animated entering={FadeIn.duration(400)} exiting={FadeOut.duration(400)}>
           <VStack gap={4} paddingX={5} marginTop={20} alignItems="center">
             <Headline>Sign Up</Headline>
@@ -56,6 +56,8 @@ export default function SignUp({ setSignUp }: SignInCardProps) {
           alignItems="center"
           paddingX={5}
           marginTop="auto"
+          position="absolute"
+          bottom={0}
           animated
           entering={SlideInDown.duration(400)}
           exiting={SlideOutDown.duration(400)}
