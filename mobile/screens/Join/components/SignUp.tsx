@@ -4,6 +4,7 @@ import { VStack } from '@/design/layout'
 import { Headline, Label, P, SubHeadline } from '@/design/text'
 import { useCallback, useState } from 'react'
 import { Keyboard, TouchableWithoutFeedback } from 'react-native'
+import { FadeIn, FadeOut, SlideInDown, SlideOutDown } from 'react-native-reanimated'
 import { SignInCardProps } from '../JoinScreen'
 import { useSignUp } from '../hooks/useSignUp'
 
@@ -26,30 +27,41 @@ export default function SignUp({ setSignUp }: SignInCardProps) {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <VStack alignItems="center" flexGrow={1}>
-        <VStack gap={4} paddingX={5} marginTop={20} alignItems="center">
-          <Headline>Sign Up</Headline>
-          <SubHeadline textAlign="center" color="fgMuted" light>
-            Join thousands of professionals already getting more done with less effort. Create your account in seconds and start today.
-          </SubHeadline>
-          {error && <P color="error">{error}</P>}
+        <VStack animated entering={FadeIn.duration(400)} exiting={FadeOut.duration(400)}>
+          <VStack gap={4} paddingX={5} marginTop={20} alignItems="center">
+            <Headline>Sign Up</Headline>
+            <SubHeadline textAlign="center" color="fgMuted" light>
+              Join thousands of professionals already getting more done with less effort. Create your account in seconds and start today.
+            </SubHeadline>
+            {error && <P color="error">{error}</P>}
+          </VStack>
+          <VStack gap={4} paddingX={6} paddingY={10}>
+            <VStack gap={1}>
+              <Label>Email</Label>
+              <Input value={email} onChangeText={setEmail} placeholder="Enter your email..." />
+            </VStack>
+            <VStack gap={1}>
+              <Label>Password</Label>
+              <Input value={password} onChangeText={setPassword} placeholder="Enter your password..." secureTextEntry />
+            </VStack>
+            <VStack gap={1}>
+              <Label>Confirm Password</Label>
+              <Input value={confirmPassword} onChangeText={setConfirmPassword} placeholder="Confirm your password..." secureTextEntry />
+            </VStack>
+          </VStack>
         </VStack>
-        <VStack gap={4} paddingX={6} paddingY={10}>
-          <VStack gap={1}>
-            <Label>Email</Label>
-            <Input value={email} onChangeText={setEmail} placeholder="Enter your email..." />
-          </VStack>
-          <VStack gap={1}>
-            <Label>Password</Label>
-            <Input value={password} onChangeText={setPassword} placeholder="Enter your password..." secureTextEntry />
-          </VStack>
-          <VStack gap={1}>
-            <Label>Confirm Password</Label>
-            <Input value={confirmPassword} onChangeText={setConfirmPassword} placeholder="Confirm your password..." secureTextEntry />
-          </VStack>
-        </VStack>
-        <VStack gap={3} justifyContent="center" alignItems="center" paddingX={5} paddingBottom={5} marginTop="auto">
+        <VStack
+          gap={3}
+          justifyContent="center"
+          alignItems="center"
+          paddingX={5}
+          marginTop="auto"
+          animated
+          entering={SlideInDown.duration(400)}
+          exiting={SlideOutDown.duration(400)}
+        >
           <Button onPress={onSignup} disabled={isInFlight}>
-            Continue
+            Sign up
           </Button>
           <Button variant="ghost" inline onPress={() => setSignUp(false)}>
             <P color="fg" medium>

@@ -1,8 +1,8 @@
-import { memo, useMemo } from 'react'
+import { memo, ReactNode, useMemo } from 'react'
 import { ViewStyle } from 'react-native'
 import { Box, BoxProps } from '../Box/Box'
 
-export type VStackProps = Omit<BoxProps, 'flexDirection'> & {
+export type VStackProps = BoxProps & {
   reverse?: boolean
 }
 
@@ -16,7 +16,7 @@ export const VStack = memo(function VStack({ style: styleProps, reverse, childre
 
   return (
     <Box width="100%" {...props} style={style}>
-      {children}
+      {children as ReactNode}
     </Box>
   )
 })

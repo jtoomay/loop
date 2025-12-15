@@ -11,10 +11,15 @@ import {
 } from '@/design/common/vars.type'
 import { colors } from '@/design/context/ThemeContext/theme'
 import { useThemeContext } from '@/design/context/ThemeContext/useThemeContext'
-import { memo, useMemo } from 'react'
+import { ComponentProps, memo, useMemo } from 'react'
 import { View, ViewProps, ViewStyle } from 'react-native'
+import Animated from 'react-native-reanimated'
 
-export type BoxProps = ViewProps & SpacingProps & MarginProps & FlexProps & BackgroundColorProps & DimensionsProps & BorderRadiusProps
+type BaseBoxProps = SpacingProps & MarginProps & FlexProps & BackgroundColorProps & DimensionsProps & BorderRadiusProps
+
+type AnimatedViewProps = ComponentProps<typeof Animated.View>
+
+export type BoxProps = (BaseBoxProps & ViewProps & { animated?: never }) | (BaseBoxProps & AnimatedViewProps & { animated: true })
 
 export const Box = memo(function Box({
   padding,
@@ -52,6 +57,7 @@ export const Box = memo(function Box({
   borderBottomRightRadius,
   style: styleProp,
   children,
+  animated,
   ...props
 }: BoxProps) {
   const theme = useThemeContext()
@@ -139,8 +145,16 @@ export const Box = memo(function Box({
     styleProp,
   ])
 
+  if (animated) {
+    return (
+      <Animated.View {...(props as ComponentProps<typeof Animated.View>)} style={style}>
+        {children}
+      </Animated.View>
+    )
+  }
+
   return (
-    <View {...props} style={style}>
+    <View {...(props as ViewProps)} style={style}>
       {children}
     </View>
   )
