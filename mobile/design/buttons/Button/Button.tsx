@@ -140,7 +140,7 @@ export const Button = memo(function Button({
   }, [children, textColor])
 
   return (
-    <TouchableOpacity {...props} style={style}>
+    <TouchableOpacity {...props} style={style} accessibilityRole="button">
       {content}
     </TouchableOpacity>
   )
