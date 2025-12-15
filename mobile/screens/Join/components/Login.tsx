@@ -25,7 +25,7 @@ export default function Login({ setSignUp }: SignInCardProps) {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <VStack alignItems="center" flexGrow={1} position="relative">
+      <VStack alignItems="center" flexGrow={1}>
         <VStack animated entering={FadeIn.duration(400)} exiting={FadeOut.duration(400)}>
           <VStack gap={4} paddingX={5} marginTop={20} alignItems="center">
             <Headline>Sign In</Headline>
@@ -41,7 +41,14 @@ export default function Login({ setSignUp }: SignInCardProps) {
             </VStack>
             <VStack gap={1}>
               <Label>Password</Label>
-              <Input value={password} onChangeText={setPassword} placeholder="Enter your password..." secureTextEntry />
+              <Input
+                value={password}
+                onChangeText={setPassword}
+                placeholder="Enter your password..."
+                secureTextEntry
+                returnKeyType="done"
+                onSubmitEditing={onLogin}
+              />
             </VStack>
           </VStack>
         </VStack>
@@ -50,8 +57,7 @@ export default function Login({ setSignUp }: SignInCardProps) {
           justifyContent="center"
           alignItems="center"
           paddingX={5}
-          position="absolute"
-          bottom={0}
+          marginTop="auto"
           animated
           entering={SlideInDown.duration(400)}
           exiting={SlideOutDown.duration(400)}
