@@ -4,7 +4,9 @@ import { useMemo } from 'react'
 export function useSettingsScreenOptions() {
   return useMemo(() => {
     const options: NativeStackNavigationOptions = {
-      presentation: 'modal',
+      presentation: 'formSheet',
+      sheetAllowedDetents: [0.6],
+      sheetGrabberVisible: true,
     }
     return options
   }, [])

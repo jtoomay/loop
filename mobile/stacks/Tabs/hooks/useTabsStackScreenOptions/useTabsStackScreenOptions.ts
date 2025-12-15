@@ -13,6 +13,7 @@ export function useTabsStackScreenOptions() {
       tabBarActiveTintColor: theme.primary,
       tabBarInactiveTintColor: theme.fgMuted,
       tabBarShowLabel: false,
+      sceneStyle: { backgroundColor: theme.bg },
     }
     return options
   }, [theme])

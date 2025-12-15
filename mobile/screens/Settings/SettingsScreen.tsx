@@ -7,7 +7,7 @@ const SettingsScreen = memo(function SettingsScreen() {
   const { onLogout, isInFlight } = useLogout()
 
   return (
-    <Screen>
+    <Screen paddingTop={4} paddingX={2}>
       <Button onPress={onLogout} disabled={isInFlight}>
         Logout
       </Button>

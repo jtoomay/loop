@@ -1,24 +1,24 @@
 import { memo } from 'react'
 import { StyleSheet } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { VStack } from '../VStack/VStack'
+import { VStack, VStackProps } from '../VStack/VStack'
 
-type ScreenProps = {
+type ScreenProps = Omit<VStackProps, 'children'> & {
   safeArea?: boolean
   children: React.ReactNode
 }
 
-export const Screen = memo(function Screen({ safeArea, children }: ScreenProps) {
+export const Screen = memo(function Screen({ safeArea, children, ...props }: ScreenProps) {
   if (safeArea) {
     return (
-      <VStack bg="bg" flexGrow={1}>
+      <VStack flexGrow={1} {...(props as VStackProps)}>
         <SafeAreaView style={styles.safeArea}>{children}</SafeAreaView>
       </VStack>
     )
   }
 
   return (
-    <VStack bg="bg" flexGrow={1}>
+    <VStack flexGrow={1} {...(props as VStackProps)}>
       {children}
     </VStack>
   )

@@ -11,6 +11,7 @@ export function useAppScreenOptions() {
       headerTintColor: theme.fg,
       headerStyle: { backgroundColor: theme.bgAlt },
       headerBackButtonDisplayMode: 'minimal',
+      contentStyle: { backgroundColor: theme.bg },
     }
     return options
   }, [theme])
