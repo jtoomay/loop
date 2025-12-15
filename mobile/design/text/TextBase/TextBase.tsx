@@ -6,12 +6,14 @@ import { ComponentProps, memo, useMemo } from 'react'
 import { Text, TextProps, TextStyle } from 'react-native'
 import Animated from 'react-native-reanimated'
 
+type BaseTextBaseProps = FontProps & TextColorProps
+
 type AnimatedTextProps = ComponentProps<typeof Animated.Text>
 type AnimatedOnlyProps = Omit<AnimatedTextProps, keyof TextProps>
 
 export type TextBaseProps =
-  | (FontProps & TextColorProps & TextProps & { animated?: never } & { [K in keyof AnimatedOnlyProps]?: never })
-  | (FontProps & TextColorProps & Omit<TextProps, keyof AnimatedOnlyProps> & AnimatedTextProps & { animated: true })
+  | (BaseTextBaseProps & TextProps & { animated?: never } & { [K in keyof AnimatedOnlyProps]?: never })
+  | (BaseTextBaseProps & Omit<TextProps, keyof AnimatedOnlyProps> & AnimatedTextProps & { animated: true })
 
 export const TextBase = memo(function TextBase({
   bold,

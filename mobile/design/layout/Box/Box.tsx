@@ -18,7 +18,6 @@ import Animated from 'react-native-reanimated'
 type BaseBoxProps = SpacingProps & MarginProps & FlexProps & BackgroundColorProps & DimensionsProps & BorderRadiusProps
 
 type AnimatedViewProps = ComponentProps<typeof Animated.View>
-
 type AnimatedOnlyProps = Omit<AnimatedViewProps, keyof ViewProps>
 
 export type BoxProps =
