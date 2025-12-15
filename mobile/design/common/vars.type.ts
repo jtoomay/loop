@@ -7,6 +7,7 @@ export type ThemeVars = {
 }
 
 type Spacing =
+  | 0
   | 1
   | 2
   | 3
