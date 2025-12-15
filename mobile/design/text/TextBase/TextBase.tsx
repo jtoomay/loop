@@ -2,10 +2,16 @@ import { FONT_STYLES, FONT_WEIGHTS, FONTS } from '@/design/common/constants'
 import { Colors, FontProps, TextColorProps, ThemeColors } from '@/design/common/vars.type'
 import { colors } from '@/design/context/ThemeContext/theme'
 import { useThemeContext } from '@/design/context/ThemeContext/useThemeContext'
-import { memo, useMemo } from 'react'
+import { ComponentProps, memo, useMemo } from 'react'
 import { Text, TextProps, TextStyle } from 'react-native'
+import Animated from 'react-native-reanimated'
 
-export type TextBaseProps = TextProps & FontProps & TextColorProps
+type AnimatedTextProps = ComponentProps<typeof Animated.Text>
+type AnimatedOnlyProps = Omit<AnimatedTextProps, keyof TextProps>
+
+export type TextBaseProps =
+  | (FontProps & TextColorProps & TextProps & { animated?: never } & { [K in keyof AnimatedOnlyProps]?: never })
+  | (FontProps & TextColorProps & Omit<TextProps, keyof AnimatedOnlyProps> & AnimatedTextProps & { animated: true })
 
 export const TextBase = memo(function TextBase({
   bold,
@@ -23,6 +29,7 @@ export const TextBase = memo(function TextBase({
   fontSize,
   style: styleProp,
   children,
+  animated,
   ...props
 }: TextBaseProps) {
   const theme = useThemeContext()
@@ -84,8 +91,16 @@ export const TextBase = memo(function TextBase({
     return s
   }, [color, font, fontSize, lineHeight, textAlign, bold, medium, light, italic, underline, uppercase, lowercase, capitalize, styleProp])
 
+  if (animated) {
+    return (
+      <Animated.Text {...(props as ComponentProps<typeof Animated.Text>)} style={style}>
+        {children}
+      </Animated.Text>
+    )
+  }
+
   return (
-    <Text {...props} style={style}>
+    <Text {...(props as TextProps)} style={style}>
       {children}
     </Text>
   )

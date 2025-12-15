@@ -19,7 +19,11 @@ type BaseBoxProps = SpacingProps & MarginProps & FlexProps & BackgroundColorProp
 
 type AnimatedViewProps = ComponentProps<typeof Animated.View>
 
-export type BoxProps = (BaseBoxProps & ViewProps & { animated?: never }) | (BaseBoxProps & AnimatedViewProps & { animated: true })
+type AnimatedOnlyProps = Omit<AnimatedViewProps, keyof ViewProps>
+
+export type BoxProps =
+  | (BaseBoxProps & ViewProps & { animated?: never } & { [K in keyof AnimatedOnlyProps]?: never })
+  | (BaseBoxProps & Omit<ViewProps, keyof AnimatedOnlyProps> & AnimatedViewProps & { animated: true })
 
 export const Box = memo(function Box({
   padding,
