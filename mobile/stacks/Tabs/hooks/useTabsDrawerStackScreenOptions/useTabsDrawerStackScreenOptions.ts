@@ -1,11 +1,10 @@
 import { DrawerNavigationOptions } from '@react-navigation/drawer'
 import { useMemo } from 'react'
 
-export function useSettingsScreenOptions() {
+export function useTabsDrawerStackScreenOptions() {
   return useMemo(() => {
     const options: DrawerNavigationOptions = {
-      headerShown: true,
-      title: 'Settings',
+      title: 'Home',
     }
     return options
   }, [])

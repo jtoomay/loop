@@ -23,12 +23,21 @@ const HomeScreen = memo(function HomeScreen() {
     router.push('/(app)/explore')
   }, [])
 
+  const onPost1Press = useCallback((num: number) => {
+    router.push(`/(app)/(tabs)/(home)/${num}`)
+  }, [])
+
   return (
     <Screen paddingY={3} paddingX={2} gap={3}>
       <Headline textAlign="center">{me?.email}</Headline>
       <Button compact onPress={onExplorePress}>
         Explore
       </Button>
+      {[1, 2, 3].map((num) => (
+        <Button key={num} compact variant="secondary" onPress={() => onPost1Press(num)}>
+          {`Post ${num}`}
+        </Button>
+      ))}
     </Screen>
   )
 })

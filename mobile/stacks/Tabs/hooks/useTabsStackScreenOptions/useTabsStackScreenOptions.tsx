@@ -1,5 +1,6 @@
 import { useThemeContext } from '@/design/context/ThemeContext/useThemeContext'
 import { BottomTabNavigationOptions } from '@react-navigation/bottom-tabs'
+import { DrawerToggleButton } from '@react-navigation/drawer'
 import { useMemo } from 'react'
 
 export function useTabsStackScreenOptions() {
@@ -14,6 +15,7 @@ export function useTabsStackScreenOptions() {
       tabBarInactiveTintColor: theme.fgMuted,
       tabBarShowLabel: false,
       sceneStyle: { backgroundColor: theme.bg },
+      headerLeft: ({ tintColor }) => <DrawerToggleButton tintColor={tintColor} />,
     }
     return options
   }, [theme])
