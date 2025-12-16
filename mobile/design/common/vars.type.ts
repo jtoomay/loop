@@ -192,7 +192,7 @@ export type BorderRadiusProps = {
   borderBottomRightRadius?: number
 }
 
-export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'icon'
+export type ButtonVariant = 'primary' | 'secondary' | 'ghost'
 export type ButtonVariantProps = {
   variant?: ButtonVariant
   compact?: boolean

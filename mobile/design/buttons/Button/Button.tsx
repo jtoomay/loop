@@ -80,7 +80,6 @@ export const Button = memo(function Button({
             textColor: color ?? 'fg',
           }
         case 'ghost':
-        case 'icon':
           return {
             backgroundColor: bg ?? 'transparent',
             textColor: color ?? 'primary',
@@ -94,7 +93,7 @@ export const Button = memo(function Button({
     }, [variant, theme, bg, color])
 
   const basePadding =
-    variant === 'ghost' || variant === 'icon'
+    variant === 'ghost'
       ? 0
       : compact
       ? BUTTON_PADDING_COMPACT
@@ -175,7 +174,7 @@ export const Button = memo(function Button({
       borderRadius: borderRadius ?? 9999, // Pill shape
       alignItems: 'center',
       justifyContent: 'center',
-      width: width ?? (variant === 'icon' ? 24 : inline ? undefined : '100%'),
+      width: width ?? (inline ? undefined : '100%'),
       height,
       ...(styleProp ? (styleProp as ViewStyle) : {}),
     }
@@ -199,7 +198,6 @@ export const Button = memo(function Button({
     marginRight,
     backgroundColor,
     borderRadius,
-    variant,
     width,
     inline,
     height,
