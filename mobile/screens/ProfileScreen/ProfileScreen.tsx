@@ -5,9 +5,13 @@ import { memo } from 'react'
 
 const ProfileScreen = memo(function ProfileScreen() {
   return (
-    <Screen padding={4} gap={4}>
-      <Button onPress={() => router.push('/profile/tray')}>Open Tray</Button>
-      <Button onPress={() => router.push('/profile/modal')}>Open Modal</Button>
+    <Screen padding={4} gap={2}>
+      <Button compact onPress={() => router.push('/profile/tray')}>
+        Open Tray
+      </Button>
+      <Button compact onPress={() => router.push('/profile/modal')}>
+        Open Modal
+      </Button>
     </Screen>
   )
 })
