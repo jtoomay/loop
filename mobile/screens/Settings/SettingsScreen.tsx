@@ -8,7 +8,7 @@ const SettingsScreen = memo(function SettingsScreen() {
     <Screen paddingTop={4} paddingX={2}>
       <Button
         variant='secondary'
-        onPress={() => router.push('/(app)/(drawer)/(settings)/account')}
+        onPress={() => router.push('/(app)/(drawer)/settings/account')}
       >
         Account
       </Button>
