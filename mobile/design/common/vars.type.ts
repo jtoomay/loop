@@ -75,9 +75,21 @@ export type PositionProps = {
 
 export type FlexProps = {
   flexDirection?: 'row' | 'column' | 'row-reverse' | 'column-reverse'
-  justifyContent?: 'flex-start' | 'flex-end' | 'center' | 'space-between' | 'space-around' | 'space-evenly'
+  justifyContent?:
+    | 'flex-start'
+    | 'flex-end'
+    | 'center'
+    | 'space-between'
+    | 'space-around'
+    | 'space-evenly'
   alignItems?: 'flex-start' | 'flex-end' | 'center' | 'stretch' | 'baseline'
-  alignContent?: 'flex-start' | 'flex-end' | 'center' | 'stretch' | 'space-between' | 'space-around'
+  alignContent?:
+    | 'flex-start'
+    | 'flex-end'
+    | 'center'
+    | 'stretch'
+    | 'space-between'
+    | 'space-around'
   alignSelf?: 'flex-start' | 'flex-end' | 'center' | 'stretch' | 'baseline'
   flex?: number
   flexWrap?: 'nowrap' | 'wrap' | 'wrap-reverse'
@@ -180,12 +192,12 @@ export type BorderRadiusProps = {
   borderBottomRightRadius?: number
 }
 
-export type ButtonVariant = 'primary' | 'secondary' | 'ghost'
-
+export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'icon'
 export type ButtonVariantProps = {
   variant?: ButtonVariant
   compact?: boolean
   inline?: boolean
+  icon?: boolean
 }
 
 export type TextColorProps = {

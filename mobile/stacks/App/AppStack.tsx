@@ -38,7 +38,7 @@ const AppStack = memo(function AppStack() {
   if (!hasSession) return <Redirect href='/join' />
   return (
     <Stack screenOptions={screenOptions}>
-      <Stack.Screen name='(tabs)' />
+      <Stack.Screen name='(drawer)' />
       <Stack.Screen name='explore' options={exploreScreenOptions} />
     </Stack>
   )

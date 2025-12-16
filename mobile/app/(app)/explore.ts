@@ -1,3 +1,3 @@
-import ExploreScreen from '@/screens/Explore/ExploreScreen'
+import ExploreScreen from '@/screens/ExploreScreen/ExploreScreen'
 
 export default ExploreScreen

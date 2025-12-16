@@ -1,7 +1,7 @@
 import { Button } from '@/design/buttons'
 import { Screen } from '@/design/layout'
 import { memo } from 'react'
-import { useLogout } from '../Settings/hooks/useLogout'
+import { useLogout } from '../hooks/useLogout'
 
 const AccountSettingsScreen = memo(function AccountSettingsScreen() {
   const { onLogout, isInFlight } = useLogout()

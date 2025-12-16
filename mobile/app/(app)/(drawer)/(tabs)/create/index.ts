@@ -1,4 +1,3 @@
-import CreateScreen from '@/screens/Create/Create'
+import CreateScreen from '@/screens/CreateScreen/CreateScreen'
 
 export default CreateScreen
-

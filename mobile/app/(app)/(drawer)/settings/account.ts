@@ -1,3 +1,3 @@
-import AccountSettingsScreen from '@/screens/AccountSettings/AccountSettingsScreen'
+import AccountSettingsScreen from '@/screens/SettingsScreen/AccountSettingsScreen/AccountSettingsScreen'
 
 export default AccountSettingsScreen

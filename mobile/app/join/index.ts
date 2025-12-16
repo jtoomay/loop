@@ -1,3 +1,3 @@
-import JoinScreen from '@/screens/Join/JoinScreen'
+import JoinScreen from '@/screens/JoinScreen/JoinScreen'
 
 export default JoinScreen
