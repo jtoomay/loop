@@ -1,8 +1,8 @@
-import { useHomeScreenOptions } from '@/screens/Home/hooks/useHomeScreenOptions/useHomeScreenOptions'
+import { useHomeScreenOptions } from '@/screens/Home/hooks/useHomeScreenOptions'
 import { useIdScreenOptions } from '@/screens/Id/hooks/useIdScreenOptions'
 import { Stack } from 'expo-router'
 import { memo } from 'react'
-import { useHomeStackScreenOptions } from './hooks/useHomeStackScreenOptions/useHomeStackScreenOptions'
+import { useHomeStackScreenOptions } from './hooks/useHomeStackScreenOptions'
 
 const HomeStack = memo(function HomeStack() {
   const screenOptions = useHomeStackScreenOptions()

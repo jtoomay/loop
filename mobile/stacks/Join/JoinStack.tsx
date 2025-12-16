@@ -1,7 +1,7 @@
 import useSessionContext from '@/context/Session/useSessionContext'
 import { Redirect, Stack } from 'expo-router'
 import { memo } from 'react'
-import { useJoinStackScreenOptions } from './hooks/useJoinStackScreenOptions/useJoinStackScreenOptions'
+import { useJoinStackScreenOptions } from './hooks/useJoinStackScreenOptions'
 
 const JoinStack = memo(function JoinStack() {
   const { hasSession } = useSessionContext()

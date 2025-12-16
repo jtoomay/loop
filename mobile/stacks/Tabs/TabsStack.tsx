@@ -1,9 +1,9 @@
-import { useCreateScreenOptions } from '@/screens/Create/hooks/useCreateScreenOptions/hooks/useCreateScreenOptions'
-import { useProfileScreenOptions } from '@/screens/Profile/hooks/useProfileScreenOptions/useProfileScreenOptions'
+import { useCreateScreenOptions } from '@/screens/Create/hooks/useCreateScreenOptions'
+import { useProfileScreenOptions } from '@/screens/Profile/hooks/useProfileScreenOptions'
 import { Tabs } from 'expo-router'
 import { memo } from 'react'
-import { useHomeTabsStackScreenOptions } from '../Home/hooks/useHomeTabsStackScreenOptions/useHomeTabsStackScreenOptions'
-import { useTabsStackScreenOptions } from './hooks/useTabsStackScreenOptions/useTabsStackScreenOptions'
+import { useHomeTabsStackScreenOptions } from '../Home/hooks/useHomeTabsStackScreenOptions'
+import { useTabsStackScreenOptions } from './hooks/useTabsStackScreenOptions'
 
 const TabsStack = memo(function TabsStack() {
   const screenOptions = useTabsStackScreenOptions()

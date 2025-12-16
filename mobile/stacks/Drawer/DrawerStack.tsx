@@ -1,8 +1,8 @@
-import { useSettingsScreenOptions } from '@/screens/Settings/hooks/useSettingsScreenOptions/useSettingsScreenOptions'
+import { useSettingsScreenOptions } from '@/screens/Settings/hooks/useSettingsScreenOptions'
 import { Drawer } from 'expo-router/drawer'
 import { memo } from 'react'
-import { useTabsDrawerStackScreenOptions } from '../Tabs/hooks/useTabsDrawerStackScreenOptions/useTabsDrawerStackScreenOptions'
-import { useDrawerStackScreenOptions } from './hooks/useDrawerStackScreenOptions/useDrawerStackScreenOptions'
+import { useTabsDrawerStackScreenOptions } from '../Tabs/hooks/useTabsDrawerStackScreenOptions'
+import { useDrawerStackScreenOptions } from './hooks/useDrawerStackScreenOptions'
 
 const DrawerStack = memo(function DrawerStack() {
   const screenOptions = useDrawerStackScreenOptions()
