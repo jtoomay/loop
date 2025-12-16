@@ -17,7 +17,7 @@ const Root = memo(function Root() {
     return null
   }
 
-  return <Slot initialRouteName="(app)" />
+  return <Slot />
 })
 
 const EntryPoint = memo(function EntryPoint() {

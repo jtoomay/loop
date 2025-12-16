@@ -41,7 +41,7 @@ const DrawerStack = memo(function DrawerStack() {
   return (
     <Drawer screenOptions={useScreenOptions()}>
       <Drawer.Screen name='(tabs)' options={useTabsScreenOptions()} />
-      <Drawer.Screen name='(settings)' options={useSettingsScreenOptions()} />
+      <Drawer.Screen name='settings' options={useSettingsScreenOptions()} />
     </Drawer>
   )
 })
