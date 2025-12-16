@@ -3,7 +3,8 @@ export const SPACING_MULTIPLIER = 6 as const
 export const BUTTON_PADDING_COMPACT = 3 as const
 export const BUTTON_PADDING_DEFAULT = 4 as const
 
-export const INPUT_PADDING_DEFAULT = 3 as const
+export const INPUT_PADDING_X_DEFAULT = 3 as const
+export const INPUT_PADDING_Y_DEFAULT = 2 as const
 export const INPUT_BORDER_RADIUS = 10 as const
 
 export const FONT_SIZES = {

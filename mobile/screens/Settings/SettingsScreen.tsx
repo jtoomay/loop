@@ -1,14 +1,13 @@
 import { ListButton } from '@/design/buttons'
-import { Screen } from '@/design/layout'
-import { Icon } from '@/design/media/Icon/Icon'
+import { Screen, ScrollableView } from '@/design/layout'
+import { Icon } from '@/design/media'
 import { router } from 'expo-router'
 import { memo } from 'react'
-import { ScrollView } from 'react-native'
 
 const SettingsScreen = memo(function SettingsScreen() {
   return (
     <Screen>
-      <ScrollView style={{ padding: 2 }} contentContainerStyle={{ flex: 1 }}>
+      <ScrollableView gap={4} padding={2} fillSpace>
         <ListButton
           start={<Icon name='person' size={24} />}
           title='Account'
@@ -16,7 +15,14 @@ const SettingsScreen = memo(function SettingsScreen() {
           detail={<Icon name='chevron-forward' />}
           onPress={() => router.push('/(app)/(drawer)/settings/account')}
         />
-      </ScrollView>
+        <ListButton
+          start={<Icon name='accessibility' size={24} />}
+          title='Accessibility'
+          description='Manage your accessibility settings'
+          detail={<Icon name='chevron-forward' />}
+          onPress={() => router.push('/(app)/(drawer)/settings/account')}
+        />
+      </ScrollableView>
     </Screen>
   )
 })
