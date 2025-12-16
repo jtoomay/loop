@@ -12,15 +12,16 @@ function useScreenOptions(): NativeStackNavigationOptions {
       headerTintColor: theme.fg,
       headerStyle: { backgroundColor: theme.bgAlt },
       contentStyle: { backgroundColor: theme.bg },
+      headerBackButtonDisplayMode: 'minimal',
     }),
     [theme],
   )
 }
 
-function useHomeScreenOptions(): NativeStackNavigationOptions {
+function useProfileScreenOptions(): NativeStackNavigationOptions {
   return useMemo(
     () => ({
-      title: 'Home',
+      title: 'Profile',
       headerLeft: ({ tintColor }) => (
         <DrawerToggleButton tintColor={tintColor} />
       ),
@@ -29,25 +30,13 @@ function useHomeScreenOptions(): NativeStackNavigationOptions {
   )
 }
 
-function useIdScreenOptions(): NativeStackNavigationOptions {
-  const theme = useThemeContext()
-  return useMemo(
-    () => ({
-      title: 'Post',
-      headerBackButtonDisplayMode: 'minimal',
-      contentStyle: { backgroundColor: theme.bg },
-    }),
-    [theme],
-  )
-}
-
-const HomeStack = memo(function HomeStack() {
+const ProfileStack = memo(function ProfileStack() {
   return (
     <Stack screenOptions={useScreenOptions()}>
-      <Stack.Screen name='index' options={useHomeScreenOptions()} />
-      <Stack.Screen name='[id]' options={useIdScreenOptions()} />
+      <Stack.Screen name='index' options={useProfileScreenOptions()} />
     </Stack>
   )
 })
 
-export default HomeStack
+export default ProfileStack
+

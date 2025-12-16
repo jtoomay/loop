@@ -1,15 +1,16 @@
 import { Button } from '@/design/buttons'
 import { Screen } from '@/design/layout'
+import { router } from 'expo-router'
 import { memo } from 'react'
-import { useLogout } from './hooks/useLogout'
 
 const SettingsScreen = memo(function SettingsScreen() {
-  const { onLogout, isInFlight } = useLogout()
-
   return (
     <Screen paddingTop={4} paddingX={2}>
-      <Button variant="secondary" onPress={onLogout} disabled={isInFlight}>
-        Logout
+      <Button
+        variant='secondary'
+        onPress={() => router.push('/(app)/(drawer)/(settings)/account')}
+      >
+        Account
       </Button>
     </Screen>
   )
