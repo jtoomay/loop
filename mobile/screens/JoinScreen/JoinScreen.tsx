@@ -11,7 +11,13 @@ const JoinScreen = memo(function JoinScreen() {
   const [signUp, setSignUp] = useState(false)
   return (
     <Screen safeArea>
-      <VStack flexGrow={1}>{signUp ? <SignUp setSignUp={setSignUp} /> : <Login setSignUp={setSignUp} />}</VStack>
+      <VStack flexGrow={1}>
+        {signUp ? (
+          <SignUp setSignUp={setSignUp} />
+        ) : (
+          <Login setSignUp={setSignUp} />
+        )}
+      </VStack>
     </Screen>
   )
 })
