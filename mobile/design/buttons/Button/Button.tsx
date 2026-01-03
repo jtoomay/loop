@@ -174,6 +174,7 @@ export const Button = memo(function Button({
       borderRadius: borderRadius ?? 9999, // Pill shape
       alignItems: 'center',
       justifyContent: 'center',
+      alignSelf: inline ? 'flex-start' : undefined,
       width: width ?? (inline ? undefined : '100%'),
       height,
       ...(styleProp ? (styleProp as ViewStyle) : {}),
