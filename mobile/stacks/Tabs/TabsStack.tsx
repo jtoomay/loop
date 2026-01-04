@@ -27,7 +27,7 @@ function useHomeScreenOptions(): BottomTabNavigationOptions {
   return useMemo(
     () => ({
       tabBarIcon: ({ color, size }) => (
-        <Ionicons name='home' color={color} size={size} />
+        <Ionicons name='list' color={color} size={size + 5} />
       ),
     }),
     [],
@@ -38,7 +38,7 @@ function useCreateScreenOptions(): BottomTabNavigationOptions {
   return useMemo(
     () => ({
       tabBarIcon: ({ color, size }) => (
-        <Ionicons name='create' color={color} size={size} />
+        <Ionicons name='add' color={color} size={size + 5} />
       ),
     }),
     [],
@@ -49,7 +49,7 @@ function useProfileScreenOptions(): BottomTabNavigationOptions {
   return useMemo(
     () => ({
       tabBarIcon: ({ color, size }) => (
-        <Ionicons name='person' color={color} size={size} />
+        <Ionicons name='bar-chart' color={color} size={size - 5} />
       ),
     }),
     [],
