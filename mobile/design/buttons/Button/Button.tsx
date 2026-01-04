@@ -177,6 +177,7 @@ export const Button = memo(function Button({
       alignSelf: inline ? 'flex-start' : undefined,
       width: width ?? (inline ? undefined : '100%'),
       height,
+      opacity: props.disabled ? 0.4 : undefined,
       ...(styleProp ? (styleProp as ViewStyle) : {}),
     }
 
@@ -203,6 +204,7 @@ export const Button = memo(function Button({
     inline,
     height,
     styleProp,
+    props.disabled,
   ])
 
   const content = useMemo(() => {

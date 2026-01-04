@@ -1,4 +1,4 @@
-import { DimensionValue } from 'react-native'
+import { DimensionValue, ViewStyle } from 'react-native'
 
 export type ThemeVars = {
   Spacing: Spacing
@@ -225,3 +225,14 @@ export type FontProps = {
     | { capitalize: true; uppercase?: never; lowercase?: never }
     | { uppercase?: never; lowercase?: never; capitalize?: never }
   )
+
+export type BorderProps = {
+  borderWidth?: number
+  borderColor?: ThemeVars['Colors']
+}
+
+export type GenericProps = {
+  overflow?: ViewStyle['overflow']
+  overflowX?: ViewStyle['overflowX']
+  overflowY?: ViewStyle['overflowY']
+}

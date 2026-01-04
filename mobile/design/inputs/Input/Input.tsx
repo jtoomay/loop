@@ -8,6 +8,7 @@ import {
   SPACING_MULTIPLIER,
 } from '@/design/common/constants'
 import {
+  BorderProps,
   BorderRadiusProps,
   Colors,
   DimensionsProps,
@@ -26,6 +27,7 @@ export type InputComponentProps = TextInputProps &
   MarginProps &
   DimensionsProps &
   BorderRadiusProps &
+  BorderProps &
   FontProps & {
     bg?: ThemeColors | Colors
     textColor?: ThemeColors | Colors
@@ -53,6 +55,8 @@ export const Input = memo(function Input({
   borderTopRightRadius,
   borderBottomLeftRadius,
   borderBottomRightRadius,
+  borderWidth,
+  borderColor,
   bg,
   textColor,
   bold,
@@ -201,8 +205,8 @@ export const Input = memo(function Input({
       borderBottomRightRadius,
       backgroundColor,
       color,
-      borderWidth: 1,
-      borderColor: theme.bgMuted,
+      borderWidth: borderWidth ?? 1,
+      borderColor: borderColor ?? theme.bgMuted,
       ...(styleProp ? (styleProp as TextStyle) : {}),
     }
 
@@ -240,13 +244,18 @@ export const Input = memo(function Input({
 
     return s
   }, [
+    paddingX,
+    padding,
+    paddingY,
+    borderRadius,
+    borderTopLeftRadius,
+    borderTopRightRadius,
+    borderBottomLeftRadius,
+    borderBottomRightRadius,
     font,
     fontSize,
     lineHeight,
     textAlign,
-    padding,
-    paddingX,
-    paddingY,
     paddingTop,
     paddingBottom,
     paddingLeft,
@@ -260,14 +269,11 @@ export const Input = memo(function Input({
     marginRight,
     width,
     height,
-    borderRadius,
-    borderTopLeftRadius,
-    borderTopRightRadius,
-    borderBottomLeftRadius,
-    borderBottomRightRadius,
     backgroundColor,
     color,
-    theme,
+    borderWidth,
+    borderColor,
+    theme.bgMuted,
     styleProp,
     bold,
     medium,
