@@ -24,6 +24,30 @@ directive @specifiedBy(
   url: String!
 ) on SCALAR
 
+input CreateHabitInput {
+  title: String!
+  description: String
+  priority: Int!
+  time: String!
+  days: [Int!]!
+}
+
+type Habit {
+  id: ID!
+  title: String!
+  description: String
+  days: [Int!]!
+  time: String!
+  priority: Int!
+  streak: Int!
+  longestStreak: Int!
+  lastCompletedAt: String
+  createdAt: String!
+  updatedAt: String!
+  skipped: Boolean!
+  completed: Boolean!
+}
+
 type Mutation {
   signup(email: String!, password: String!): Session!
   login(email: String!, password: String!): Session!
@@ -40,6 +64,11 @@ type Mutation {
   unlockUser(userId: ID!): Boolean!
   deleteUser(userId: ID!): Boolean!
   updateUserRole(userId: ID!, role: UserRole!): User!
+  createHabit(input: CreateHabitInput!): Habit!
+  updateHabit(id: ID!, input: UpdateHabitInput!): Habit!
+  completeHabit(id: ID!, timezone: String!): Boolean!
+  skipHabit(id: ID!, timezone: String!): Boolean!
+  deleteHabit(id: ID!): Boolean!
 }
 
 type Query {
@@ -47,6 +76,8 @@ type Query {
   allUsers(limit: Int = 50, offset: Int = 0): UsersConnection!
   user(id: ID!): User
   systemStats: SystemStats!
+  habits(timezone: String!): [Habit!]!
+  allHabits(timezone: String!): [Habit!]!
 }
 
 type Session {
@@ -59,6 +90,14 @@ type SystemStats {
   verifiedUsers: Int!
   lockedUsers: Int!
   adminUsers: Int!
+}
+
+input UpdateHabitInput {
+  title: String
+  description: String
+  priority: Int
+  time: String
+  days: [Int!]
 }
 
 input UpdateUserInput {
