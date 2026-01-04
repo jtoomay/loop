@@ -9,6 +9,30 @@ import (
 	"strconv"
 )
 
+type CreateHabitInput struct {
+	Title       string  `json:"title"`
+	Description *string `json:"description,omitempty"`
+	Priority    int32   `json:"priority"`
+	Time        string  `json:"time"`
+	Days        []int32 `json:"days"`
+}
+
+type Habit struct {
+	ID              string  `json:"id"`
+	Title           string  `json:"title"`
+	Description     *string `json:"description,omitempty"`
+	Days            []int32 `json:"days"`
+	Time            string  `json:"time"`
+	Priority        int32   `json:"priority"`
+	Streak          int32   `json:"streak"`
+	LongestStreak   int32   `json:"longestStreak"`
+	LastCompletedAt *string `json:"lastCompletedAt,omitempty"`
+	CreatedAt       string  `json:"createdAt"`
+	UpdatedAt       string  `json:"updatedAt"`
+	Skipped         bool    `json:"skipped"`
+	Completed       bool    `json:"completed"`
+}
+
 type Mutation struct {
 }
 
@@ -25,6 +49,14 @@ type SystemStats struct {
 	VerifiedUsers int32 `json:"verifiedUsers"`
 	LockedUsers   int32 `json:"lockedUsers"`
 	AdminUsers    int32 `json:"adminUsers"`
+}
+
+type UpdateHabitInput struct {
+	Title       *string `json:"title,omitempty"`
+	Description *string `json:"description,omitempty"`
+	Priority    *int32  `json:"priority,omitempty"`
+	Time        *string `json:"time,omitempty"`
+	Days        []int32 `json:"days,omitempty"`
 }
 
 type UpdateUserInput struct {

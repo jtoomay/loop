@@ -7,13 +7,16 @@ package graph
 
 import (
 	"context"
+	"database/sql"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
 	"github.com/brightsidedeveloper/loop/graph/model"
 	"github.com/brightsidedeveloper/loop/internal/auth"
 	"github.com/brightsidedeveloper/loop/internal/validation"
+	pgx "github.com/jackc/pgx/v5"
 )
 
 // Signup is the resolver for the signup field.
@@ -431,6 +434,377 @@ func (r *mutationResolver) UpdateUserRole(ctx context.Context, userID string, ro
 	return dbUserToModel(dbUser), nil
 }
 
+// CreateHabit is the resolver for the createHabit field.
+func (r *mutationResolver) CreateHabit(ctx context.Context, input model.CreateHabitInput) (*model.Habit, error) {
+	// Get user from context
+	authUser, err := auth.GetUserFromContext(ctx)
+	if err != nil {
+		return nil, auth.Unauthorized(ctx)
+	}
+
+	// Validate input
+	title := strings.TrimSpace(input.Title)
+	days := make([]int32, len(input.Days))
+	for i, d := range input.Days {
+		days[i] = int32(d)
+	}
+	timeStr := strings.TrimSpace(input.Time)
+	priority := int32(input.Priority)
+
+	if err := validateHabitInput(&title, days, &timeStr, &priority); err != nil {
+		AddError(ctx, ErrorCodeInvalidInput, err.Error())
+		return nil, err
+	}
+
+	// Handle optional description
+	var description sql.NullString
+	if input.Description != nil {
+		desc := strings.TrimSpace(*input.Description)
+		if desc != "" {
+			description = sql.NullString{String: desc, Valid: true}
+		}
+	}
+
+	// Insert habit
+	var habit DBHabit
+	err = r.DB.QueryRow(ctx, `
+		INSERT INTO habits (user_id, title, description, days, time, priority)
+		VALUES ($1, $2, $3, $4, $5, $6)
+		RETURNING id, user_id, title, description, created_at, updated_at,
+		          days, time, priority, streak, longest_streak, last_completed_at
+	`, authUser.ID, title, description, days, timeStr, priority).Scan(
+		&habit.ID,
+		&habit.UserID,
+		&habit.Title,
+		&habit.Description,
+		&habit.CreatedAt,
+		&habit.UpdatedAt,
+		&habit.Days,
+		&habit.Time,
+		&habit.Priority,
+		&habit.Streak,
+		&habit.LongestStreak,
+		&habit.LastCompletedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return dbHabitToModel(&habit), nil
+}
+
+// UpdateHabit is the resolver for the updateHabit field.
+func (r *mutationResolver) UpdateHabit(ctx context.Context, id string, input model.UpdateHabitInput) (*model.Habit, error) {
+	// Get user from context
+	authUser, err := auth.GetUserFromContext(ctx)
+	if err != nil {
+		return nil, auth.Unauthorized(ctx)
+	}
+
+	// Verify habit exists and belongs to user
+	habit, err := getHabitByIDAndUser(ctx, r.DB, id, authUser.ID)
+	if err != nil {
+		AddError(ctx, ErrorCodeInvalidInput, "Habit not found")
+		return nil, err
+	}
+
+	// Prepare update values
+	var title *string
+	var description sql.NullString
+	var days []int32
+	var timeStr *string
+	var priority *int32
+
+	if input.Title != nil {
+		t := strings.TrimSpace(*input.Title)
+		title = &t
+	} else {
+		title = &habit.Title
+	}
+
+	if input.Description != nil {
+		desc := strings.TrimSpace(*input.Description)
+		if desc != "" {
+			description = sql.NullString{String: desc, Valid: true}
+		} else {
+			description = sql.NullString{Valid: false}
+		}
+	} else {
+		description = habit.Description
+	}
+
+	if input.Days != nil {
+		days = make([]int32, len(input.Days))
+		for i, d := range input.Days {
+			days[i] = int32(d)
+		}
+	} else {
+		days = habit.Days
+	}
+
+	if input.Time != nil {
+		t := strings.TrimSpace(*input.Time)
+		timeStr = &t
+	} else {
+		timeStr = &habit.Time
+	}
+
+	if input.Priority != nil {
+		p := int32(*input.Priority)
+		priority = &p
+	} else {
+		priority = &habit.Priority
+	}
+
+	// Validate all values together
+	if err := validateHabitInput(title, days, timeStr, priority); err != nil {
+		AddError(ctx, ErrorCodeInvalidInput, err.Error())
+		return nil, err
+	}
+
+	// Build dynamic UPDATE query
+	updateFields := []string{}
+	args := []interface{}{}
+	argPos := 1
+
+	if input.Title != nil {
+		updateFields = append(updateFields, fmt.Sprintf("title = $%d", argPos))
+		args = append(args, *title)
+		argPos++
+	}
+
+	if input.Description != nil {
+		updateFields = append(updateFields, fmt.Sprintf("description = $%d", argPos))
+		args = append(args, description)
+		argPos++
+	}
+
+	if input.Days != nil {
+		updateFields = append(updateFields, fmt.Sprintf("days = $%d", argPos))
+		args = append(args, days)
+		argPos++
+	}
+
+	if input.Time != nil {
+		updateFields = append(updateFields, fmt.Sprintf("time = $%d", argPos))
+		args = append(args, *timeStr)
+		argPos++
+	}
+
+	if input.Priority != nil {
+		updateFields = append(updateFields, fmt.Sprintf("priority = $%d", argPos))
+		args = append(args, *priority)
+		argPos++
+	}
+
+	if len(updateFields) == 0 {
+		// No fields to update, return existing habit
+		return dbHabitToModel(habit), nil
+	}
+
+	// Add WHERE clause
+	args = append(args, id, authUser.ID)
+	whereClause := fmt.Sprintf("WHERE id = $%d AND user_id = $%d", argPos, argPos+1)
+
+	// Execute update
+	var updatedHabit DBHabit
+	query := fmt.Sprintf(`
+		UPDATE habits
+		SET %s
+		%s
+		RETURNING id, user_id, title, description, created_at, updated_at,
+		          days, time, priority, streak, longest_streak, last_completed_at
+	`, strings.Join(updateFields, ", "), whereClause)
+
+	err = r.DB.QueryRow(ctx, query, args...).Scan(
+		&updatedHabit.ID,
+		&updatedHabit.UserID,
+		&updatedHabit.Title,
+		&updatedHabit.Description,
+		&updatedHabit.CreatedAt,
+		&updatedHabit.UpdatedAt,
+		&updatedHabit.Days,
+		&updatedHabit.Time,
+		&updatedHabit.Priority,
+		&updatedHabit.Streak,
+		&updatedHabit.LongestStreak,
+		&updatedHabit.LastCompletedAt,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			AddError(ctx, ErrorCodeInvalidInput, "Habit not found")
+			return nil, errors.New("habit not found")
+		}
+		return nil, err
+	}
+
+	return dbHabitToModel(&updatedHabit), nil
+}
+
+// CompleteHabit is the resolver for the completeHabit field.
+func (r *mutationResolver) CompleteHabit(ctx context.Context, id string, timezone string) (bool, error) {
+	// Get user from context
+	authUser, err := auth.GetUserFromContext(ctx)
+	if err != nil {
+		return false, auth.Unauthorized(ctx)
+	}
+
+	// Verify habit exists and belongs to user
+	_, err = getHabitByIDAndUser(ctx, r.DB, id, authUser.ID)
+	if err != nil {
+		AddError(ctx, ErrorCodeInvalidInput, "Habit not found")
+		return false, err
+	}
+
+	// Get timezone (required parameter)
+	tz := timezone
+	if tz == "" {
+		tz = "UTC"
+	}
+
+	// Check if already completed today (using user's timezone)
+	var existingID string
+	err = r.DB.QueryRow(ctx, `
+		SELECT id FROM habit_completions
+		WHERE habit_id = $1 
+		  AND (created_at AT TIME ZONE $2)::date = (NOW() AT TIME ZONE $2)::date
+	`, id, tz).Scan(&existingID)
+
+	if err == nil {
+		// Already completed today, update to not skipped
+		_, err = r.DB.Exec(ctx, `
+			UPDATE habit_completions
+			SET skipped = false
+			WHERE id = $1
+		`, existingID)
+		if err != nil {
+			return false, err
+		}
+	} else if errors.Is(err, pgx.ErrNoRows) {
+		// Create new completion record
+		_, err = r.DB.Exec(ctx, `
+			INSERT INTO habit_completions (habit_id, skipped)
+			VALUES ($1, false)
+		`, id)
+		if err != nil {
+			return false, err
+		}
+	} else {
+		return false, err
+	}
+
+	// Update habit: increment streak, update longest streak, update last_completed_at
+	_, err = r.DB.Exec(ctx, `
+		UPDATE habits
+		SET streak = streak + 1,
+		    longest_streak = GREATEST(longest_streak, streak + 1),
+		    last_completed_at = NOW()
+		WHERE id = $1
+	`, id)
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+// SkipHabit is the resolver for the skipHabit field.
+func (r *mutationResolver) SkipHabit(ctx context.Context, id string, timezone string) (bool, error) {
+	// Get user from context
+	authUser, err := auth.GetUserFromContext(ctx)
+	if err != nil {
+		return false, auth.Unauthorized(ctx)
+	}
+
+	// Verify habit exists and belongs to user
+	_, err = getHabitByIDAndUser(ctx, r.DB, id, authUser.ID)
+	if err != nil {
+		AddError(ctx, ErrorCodeInvalidInput, "Habit not found")
+		return false, err
+	}
+
+	// Get timezone (required parameter)
+	tz := timezone
+	if tz == "" {
+		tz = "UTC"
+	}
+
+	// Check if already completed/skipped today (using user's timezone)
+	var existingID string
+	err = r.DB.QueryRow(ctx, `
+		SELECT id FROM habit_completions
+		WHERE habit_id = $1 
+		  AND (created_at AT TIME ZONE $2)::date = (NOW() AT TIME ZONE $2)::date
+	`, id, tz).Scan(&existingID)
+
+	if err == nil {
+		// Already has a record today, update to skipped
+		_, err = r.DB.Exec(ctx, `
+			UPDATE habit_completions
+			SET skipped = true
+			WHERE id = $1
+		`, existingID)
+		if err != nil {
+			return false, err
+		}
+	} else if errors.Is(err, pgx.ErrNoRows) {
+		// Create new skip record
+		_, err = r.DB.Exec(ctx, `
+			INSERT INTO habit_completions (habit_id, skipped)
+			VALUES ($1, true)
+		`, id)
+		if err != nil {
+			return false, err
+		}
+	} else {
+		return false, err
+	}
+
+	// Update habit: reset streak to 0
+	_, err = r.DB.Exec(ctx, `
+		UPDATE habits
+		SET streak = 0
+		WHERE id = $1
+	`, id)
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+// DeleteHabit is the resolver for the deleteHabit field.
+func (r *mutationResolver) DeleteHabit(ctx context.Context, id string) (bool, error) {
+	// Get user from context
+	authUser, err := auth.GetUserFromContext(ctx)
+	if err != nil {
+		return false, auth.Unauthorized(ctx)
+	}
+
+	// Verify habit exists and belongs to user
+	_, err = getHabitByIDAndUser(ctx, r.DB, id, authUser.ID)
+	if err != nil {
+		AddError(ctx, ErrorCodeInvalidInput, "Habit not found")
+		return false, err
+	}
+
+	// Delete habit (CASCADE will handle habit_completions)
+	result, err := r.DB.Exec(ctx, `
+		DELETE FROM habits
+		WHERE id = $1 AND user_id = $2
+	`, id, authUser.ID)
+	if err != nil {
+		return false, err
+	}
+
+	if result.RowsAffected() == 0 {
+		AddError(ctx, ErrorCodeInvalidInput, "Habit not found")
+		return false, errors.New("habit not found")
+	}
+
+	return true, nil
+}
+
 // Me is the resolver for the me field.
 func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
 	// Get user from context (set by auth middleware)
@@ -539,6 +913,148 @@ func (r *queryResolver) SystemStats(ctx context.Context) (*model.SystemStats, er
 	}
 
 	return &stats, nil
+}
+
+// Habits is the resolver for the habits field.
+func (r *queryResolver) Habits(ctx context.Context, timezone string) ([]*model.Habit, error) {
+	// Get user from context (set by auth middleware)
+	authUser, err := auth.GetUserFromContext(ctx)
+	if err != nil {
+		return nil, auth.Unauthorized(ctx)
+	}
+
+	// Get timezone (required parameter)
+	tz := timezone
+	if tz == "" {
+		tz = "UTC"
+	}
+
+	// Query habits that:
+	// 1. Belong to the user
+	// 2. Are scheduled for today (today's day of week is in the days array) - using user's timezone
+	// 3. Haven't been completed or skipped today - using user's timezone
+	// 4. Ordered by time (ascending) and priority (descending)
+	// Note: EXTRACT(DOW FROM date) returns 0=Sunday, 1=Monday, ..., 6=Saturday
+	// We use AT TIME ZONE to convert timestamps to the user's timezone before extracting the date
+	rows, err := r.DB.Query(ctx, `
+		SELECT h.id, h.user_id, h.title, h.description, h.created_at, h.updated_at,
+		       h.days, h.time, h.priority, h.streak, h.longest_streak, h.last_completed_at,
+		       false as skipped,
+		       false as completed
+		FROM habits h
+		WHERE h.user_id = $1
+		  AND (EXTRACT(DOW FROM (NOW() AT TIME ZONE $2)::date)::int) = ANY(h.days)
+		  AND NOT EXISTS (
+		    SELECT 1
+		    FROM habit_completions hc
+		    WHERE hc.habit_id = h.id
+		      AND DATE(hc.created_at AT TIME ZONE $2) = DATE(NOW() AT TIME ZONE $2)
+		  )
+		ORDER BY h.time ASC, h.priority DESC
+	`, authUser.ID, tz)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var habits []*model.Habit
+	for rows.Next() {
+		var habit DBHabit
+		err := rows.Scan(
+			&habit.ID,
+			&habit.UserID,
+			&habit.Title,
+			&habit.Description,
+			&habit.CreatedAt,
+			&habit.UpdatedAt,
+			&habit.Days,
+			&habit.Time,
+			&habit.Priority,
+			&habit.Streak,
+			&habit.LongestStreak,
+			&habit.LastCompletedAt,
+			&habit.Skipped,
+			&habit.Completed,
+		)
+		if err != nil {
+			return nil, err
+		}
+		habits = append(habits, dbHabitToModel(&habit))
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return habits, nil
+}
+
+// AllHabits is the resolver for the allHabits field.
+func (r *queryResolver) AllHabits(ctx context.Context, timezone string) ([]*model.Habit, error) {
+	// Get user from context (set by auth middleware)
+	authUser, err := auth.GetUserFromContext(ctx)
+	if err != nil {
+		return nil, auth.Unauthorized(ctx)
+	}
+
+	// Get timezone (required parameter)
+	tz := timezone
+	if tz == "" {
+		tz = "UTC"
+	}
+
+	// Query all habits for the user with completion status for today
+	rows, err := r.DB.Query(ctx, `
+		SELECT h.id, h.user_id, h.title, h.description, h.created_at, h.updated_at,
+		       h.days, h.time, h.priority, h.streak, h.longest_streak, h.last_completed_at,
+		       COALESCE(hc_today.skipped, false) as skipped,
+		       COALESCE(hc_today.skipped = false AND hc_today.id IS NOT NULL, false) as completed
+		FROM habits h
+		LEFT JOIN LATERAL (
+		  SELECT hc.id, hc.skipped
+		  FROM habit_completions hc
+		  WHERE hc.habit_id = h.id
+		    AND DATE(hc.created_at AT TIME ZONE $2) = DATE(NOW() AT TIME ZONE $2)
+		  LIMIT 1
+		) hc_today ON true
+		WHERE h.user_id = $1
+		ORDER BY h.time ASC, h.priority DESC
+	`, authUser.ID, tz)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var habits []*model.Habit
+	for rows.Next() {
+		var habit DBHabit
+		err := rows.Scan(
+			&habit.ID,
+			&habit.UserID,
+			&habit.Title,
+			&habit.Description,
+			&habit.CreatedAt,
+			&habit.UpdatedAt,
+			&habit.Days,
+			&habit.Time,
+			&habit.Priority,
+			&habit.Streak,
+			&habit.LongestStreak,
+			&habit.LastCompletedAt,
+			&habit.Skipped,
+			&habit.Completed,
+		)
+		if err != nil {
+			return nil, err
+		}
+		habits = append(habits, dbHabitToModel(&habit))
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return habits, nil
 }
 
 // Mutation returns MutationResolver implementation.

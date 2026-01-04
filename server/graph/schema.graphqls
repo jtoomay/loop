@@ -6,6 +6,8 @@ type Query {
   allUsers(limit: Int = 50, offset: Int = 0): UsersConnection! @admin
   user(id: ID!): User @admin
   systemStats: SystemStats! @admin
+  habits(timezone: String!): [Habit!]! @auth
+  allHabits(timezone: String!): [Habit!]! @auth
 }
 
 type Mutation {
@@ -26,11 +28,34 @@ type Mutation {
   unlockUser(userId: ID!): Boolean! @admin
   deleteUser(userId: ID!): Boolean! @admin
   updateUserRole(userId: ID!, role: UserRole!): User! @admin
+
+  # Habit mutations
+  createHabit(input: CreateHabitInput!): Habit! @auth
+  updateHabit(id: ID!, input: UpdateHabitInput!): Habit! @auth
+  completeHabit(id: ID!, timezone: String!): Boolean! @auth
+  skipHabit(id: ID!, timezone: String!): Boolean! @auth
+  deleteHabit(id: ID!): Boolean! @auth
 }
 
 input UpdateUserInput {
   firstName: String
   lastName: String
+}
+
+input CreateHabitInput {
+  title: String!
+  description: String
+  priority: Int!
+  time: String!
+  days: [Int!]!
+}
+
+input UpdateHabitInput {
+  title: String
+  description: String
+  priority: Int
+  time: String
+  days: [Int!]
 }
 
 type Session {
@@ -65,4 +90,20 @@ type SystemStats {
   verifiedUsers: Int!
   lockedUsers: Int!
   adminUsers: Int!
+}
+
+type Habit {
+  id: ID!
+  title: String!
+  description: String
+  days: [Int!]!
+  time: String!
+  priority: Int!
+  streak: Int!
+  longestStreak: Int!
+  lastCompletedAt: String
+  createdAt: String!
+  updatedAt: String!
+  skipped: Boolean!
+  completed: Boolean!
 }
