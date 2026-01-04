@@ -2,11 +2,15 @@ import SelectTabs, { TabsValue } from '@/components/UI/SelectTabs'
 import { Button } from '@/design/buttons'
 import { Input } from '@/design/inputs'
 import { HStack, Screen, VStack } from '@/design/layout'
+import { CreateScreenMutation } from '@/gql/CreateScreenMutation.graphql'
 import DateTimePicker, {
   DateTimePickerEvent,
 } from '@react-native-community/datetimepicker'
-import { memo, useCallback, useEffect, useMemo, useState } from 'react'
+import { router } from 'expo-router'
+import { memo, useCallback, useMemo, useState } from 'react'
 import { Keyboard, TouchableWithoutFeedback } from 'react-native'
+import { useMutation } from 'react-relay'
+import { graphql } from 'relay-runtime'
 
 const WEEKDAYS = [
   { label: 'Su', value: 0 },
@@ -38,18 +42,35 @@ const CreateScreen = memo(function CreateScreen() {
     if (!title || !time || days.length === 0 || !priority) return true
     return false
   }, [days.length, priority, time, title])
-  console.log('🚀 ~ CreateScreen ~ isDisabled:', isDisabled)
-  const onSubmit = useCallback(() => {}, [])
 
-  //TODO: Remove later once we make the function to send to db
-  useEffect(() => {
-    console.log(
-      'Time: ',
-      time.toLocaleTimeString(undefined, {
-        hour12: false,
-      }),
-    )
-  }, [time])
+  const [create, isSubmitting] = useMutation<CreateScreenMutation>(graphql`
+    mutation CreateScreenMutation($input: CreateHabitInput!) {
+      createHabit(input: $input) {
+        id
+      }
+    }
+  `)
+
+  const onSubmit = useCallback(() => {
+    if (isDisabled || isSubmitting) return
+
+    create({
+      variables: {
+        input: {
+          days: days.map(day => day.value as number),
+          priority: priority.value as number,
+          time: time.toLocaleTimeString(undefined, {
+            hour12: false,
+          }),
+          title,
+          // description,
+        },
+      },
+      onCompleted: () => {
+        router.navigate('/(app)/(drawer)/(tabs)/(home)')
+      },
+    })
+  }, [create, days, isDisabled, isSubmitting, priority.value, time, title])
 
   const onChange = (_: DateTimePickerEvent, selectedTime?: Date) => {
     const currentTime = selectedTime || time
