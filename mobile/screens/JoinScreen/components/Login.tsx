@@ -80,7 +80,7 @@ export default function Login({ setSignUp }: SignInCardProps) {
           <Button onPress={onLogin} disabled={isInFlight}>
             Login
           </Button>
-          <Button variant='ghost' inline onPress={() => setSignUp(true)}>
+          <Button variant='ghost' onPress={() => setSignUp(true)}>
             <P color='fg' medium>
               Don&apos;t have an account? Sign up
             </P>

@@ -1,45 +1,48 @@
-import { Button } from '@/design/buttons'
 import { Screen } from '@/design/layout'
-import { Headline } from '@/design/text'
-import { HomeScreenQuery } from '@/gql/HomeScreenQuery.graphql'
-import { router } from 'expo-router'
-import { memo, useCallback } from 'react'
+import { P } from '@/design/text'
+import {
+  HomeScreenQuery,
+  HomeScreenQuery$data,
+} from '@/gql/HomeScreenQuery.graphql'
+import useTimezone from '@/hooks/useTimezone'
+import { memo } from 'react'
+import { FlatList } from 'react-native'
 import { graphql, useLazyLoadQuery } from 'react-relay'
 
 const HomeScreen = memo(function HomeScreen() {
-  const { me } = useLazyLoadQuery<HomeScreenQuery>(
+  const timezone = useTimezone()
+
+  const { habits } = useLazyLoadQuery<HomeScreenQuery>(
     graphql`
-      query HomeScreenQuery {
-        me {
+      query HomeScreenQuery($timezone: String!) {
+        habits(timezone: $timezone) {
           id
-          email
+          title
+          description
+          time
+          priority
+          streak
         }
       }
     `,
-    {}
+    { timezone },
   )
-
-  const onExplorePress = useCallback(() => {
-    router.push('/(app)/explore')
-  }, [])
-
-  const onPost1Press = useCallback((num: number) => {
-    router.push(`/(app)/(tabs)/(home)/${num}`)
-  }, [])
 
   return (
     <Screen paddingY={3} paddingX={2} gap={3}>
-      <Headline textAlign="center">{me?.email}</Headline>
-      <Button compact onPress={onExplorePress}>
-        Explore
-      </Button>
-      {[1, 2, 3].map((num) => (
-        <Button key={num} compact variant="secondary" onPress={() => onPost1Press(num)}>
-          {`Post ${num}`}
-        </Button>
-      ))}
+      <FlatList
+        data={habits}
+        renderItem={({ item }) => <HabitHomeCell {...item} />}
+        keyExtractor={({ id }) => id}
+      />
     </Screen>
   )
 })
+
+function HabitHomeCell({ id, title }: HabitHomeCellProps) {
+  return <P>{title}</P>
+}
+
+type HabitHomeCellProps = HomeScreenQuery$data['habits'][0]
 
 export default HomeScreen
