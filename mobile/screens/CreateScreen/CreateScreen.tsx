@@ -6,6 +6,7 @@ import DateTimePicker, {
   DateTimePickerEvent,
 } from '@react-native-community/datetimepicker'
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
+import { Keyboard, TouchableWithoutFeedback } from 'react-native'
 
 const WEEKDAYS = [
   { label: 'Su', value: 0 },
@@ -55,48 +56,50 @@ const CreateScreen = memo(function CreateScreen() {
     setTime(currentTime)
   }
   return (
-    <Screen padding={4}>
-      <VStack gap={4}>
-        <Input value={title} onChangeText={setTitle} placeholder='Title...' />
-        <HStack alignItems='center' gap={2}>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <Screen padding={4}>
+        <VStack gap={4}>
+          <Input value={title} onChangeText={setTitle} placeholder='Title...' />
+          <HStack alignItems='center' gap={2}>
+            <SelectTabs
+              data={PRIORITIES}
+              value={priority}
+              onSelect={item => setPriority(item)}
+            />
+
+            <DateTimePicker
+              mode='time'
+              display='default'
+              value={time}
+              onChange={onChange}
+            />
+          </HStack>
           <SelectTabs
-            data={PRIORITIES}
-            value={priority}
-            onSelect={item => setPriority(item)}
+            data={WEEKDAYS}
+            value={days}
+            multiple
+            onSelect={(item, isAdded) => {
+              if (isAdded) {
+                setDays(d => [...d, item])
+              } else {
+                setDays(days =>
+                  days.filter(d => {
+                    const value = item.value ?? item.label
+
+                    const thisValue = d.value ?? d.label
+
+                    return value !== thisValue
+                  }),
+                )
+              }
+            }}
           />
-
-          <DateTimePicker
-            mode='time'
-            display='default'
-            value={time}
-            onChange={onChange}
-          />
-        </HStack>
-        <SelectTabs
-          data={WEEKDAYS}
-          value={days}
-          multiple
-          onSelect={(item, isAdded) => {
-            if (isAdded) {
-              setDays(d => [...d, item])
-            } else {
-              setDays(days =>
-                days.filter(d => {
-                  const value = item.value ?? item.label
-
-                  const thisValue = d.value ?? d.label
-
-                  return value !== thisValue
-                }),
-              )
-            }
-          }}
-        />
-        <Button onPress={onSubmit} disabled={isDisabled}>
-          Create
-        </Button>
-      </VStack>
-    </Screen>
+          <Button onPress={onSubmit} disabled={isDisabled}>
+            Create
+          </Button>
+        </VStack>
+      </Screen>
+    </TouchableWithoutFeedback>
   )
 })
 
