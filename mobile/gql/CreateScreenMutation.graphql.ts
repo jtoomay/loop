@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<7c9ae6c86e2cfa15a1d950cb7a9c9367>>
+ * @generated SignedSource<<bee3602bae0df03dfda9756b31081965>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -21,7 +21,12 @@ export type CreateScreenMutation$variables = {
 };
 export type CreateScreenMutation$data = {
   readonly createHabit: {
+    readonly description: string | null | undefined;
     readonly id: string;
+    readonly priority: number;
+    readonly streak: number;
+    readonly time: string;
+    readonly title: string;
   };
 };
 export type CreateScreenMutation = {
@@ -58,6 +63,41 @@ v1 = [
         "kind": "ScalarField",
         "name": "id",
         "storageKey": null
+      },
+      {
+        "alias": null,
+        "args": null,
+        "kind": "ScalarField",
+        "name": "title",
+        "storageKey": null
+      },
+      {
+        "alias": null,
+        "args": null,
+        "kind": "ScalarField",
+        "name": "description",
+        "storageKey": null
+      },
+      {
+        "alias": null,
+        "args": null,
+        "kind": "ScalarField",
+        "name": "time",
+        "storageKey": null
+      },
+      {
+        "alias": null,
+        "args": null,
+        "kind": "ScalarField",
+        "name": "priority",
+        "storageKey": null
+      },
+      {
+        "alias": null,
+        "args": null,
+        "kind": "ScalarField",
+        "name": "streak",
+        "storageKey": null
       }
     ],
     "storageKey": null
@@ -81,16 +121,16 @@ return {
     "selections": (v1/*: any*/)
   },
   "params": {
-    "cacheID": "f78fe7a4c12ec9e0f5f9a4655c5a6f5c",
+    "cacheID": "b9ae2e947bf9bc0dd1858c045750d49a",
     "id": null,
     "metadata": {},
     "name": "CreateScreenMutation",
     "operationKind": "mutation",
-    "text": "mutation CreateScreenMutation(\n  $input: CreateHabitInput!\n) {\n  createHabit(input: $input) {\n    id\n  }\n}\n"
+    "text": "mutation CreateScreenMutation(\n  $input: CreateHabitInput!\n) {\n  createHabit(input: $input) {\n    id\n    title\n    description\n    time\n    priority\n    streak\n  }\n}\n"
   }
 };
 })();
 
-(node as any).hash = "42ae6d68a4883b34f1ea473be9c7d264";
+(node as any).hash = "55c55d00003d9f712b43f34a37bc5db1";
 
 export default node;

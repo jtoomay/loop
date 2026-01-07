@@ -182,6 +182,10 @@ export type BackgroundColorProps = {
 export type DimensionsProps = {
   width?: DimensionValue
   height?: DimensionValue
+  minWidth?: DimensionValue
+  minHeight?: DimensionValue
+  maxWidth?: DimensionValue
+  maxHeight?: DimensionValue
 }
 
 export type BorderRadiusProps = {

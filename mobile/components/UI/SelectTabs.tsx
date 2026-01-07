@@ -14,6 +14,7 @@ export default function SelectTabs({
     <HStack
       bg='bgAlt'
       height={45}
+      maxHeight={45}
       flexGrow={1}
       borderRadius={INPUT_BORDER_RADIUS}
       borderWidth={1}
