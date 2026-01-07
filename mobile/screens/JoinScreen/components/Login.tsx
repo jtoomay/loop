@@ -72,7 +72,6 @@ export default function Login({ setSignUp }: SignInCardProps) {
           justifyContent='center'
           alignItems='center'
           paddingX={5}
-          marginTop='auto'
           animated
           entering={SlideInDown.duration(400)}
           exiting={SlideOutDown.duration(400)}
