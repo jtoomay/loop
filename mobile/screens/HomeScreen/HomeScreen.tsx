@@ -63,7 +63,7 @@ function HabitHomeCell({
           {streak}
         </P>
       )}
-      <HStack gap={6} alignItems='center' flex={1}>
+      <HStack gap={3} alignItems='center' flex={1}>
         <Box
           width={24}
           height={24}
