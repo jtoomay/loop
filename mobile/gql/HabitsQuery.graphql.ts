@@ -1,5 +1,5 @@
 /**
- * @generated SignedSource<<1020d758858bc1549a9cb171d81123d7>>
+ * @generated SignedSource<<bed56b7ef223c4e870215287e5a0fdbf>>
  * @lightSyntaxTransform
  * @nogrep
  */
@@ -9,10 +9,10 @@
 // @ts-nocheck
 
 import { ConcreteRequest } from 'relay-runtime';
-export type HomeScreenQuery$variables = {
+export type HabitsQuery$variables = {
   timezone: string;
 };
-export type HomeScreenQuery$data = {
+export type HabitsQuery$data = {
   readonly habits: ReadonlyArray<{
     readonly description: string | null | undefined;
     readonly id: string;
@@ -22,9 +22,9 @@ export type HomeScreenQuery$data = {
     readonly title: string;
   }>;
 };
-export type HomeScreenQuery = {
-  response: HomeScreenQuery$data;
-  variables: HomeScreenQuery$variables;
+export type HabitsQuery = {
+  response: HabitsQuery$data;
+  variables: HabitsQuery$variables;
 };
 
 const node: ConcreteRequest = (function(){
@@ -101,7 +101,7 @@ return {
     "argumentDefinitions": (v0/*: any*/),
     "kind": "Fragment",
     "metadata": null,
-    "name": "HomeScreenQuery",
+    "name": "HabitsQuery",
     "selections": (v1/*: any*/),
     "type": "Query",
     "abstractKey": null
@@ -110,20 +110,20 @@ return {
   "operation": {
     "argumentDefinitions": (v0/*: any*/),
     "kind": "Operation",
-    "name": "HomeScreenQuery",
+    "name": "HabitsQuery",
     "selections": (v1/*: any*/)
   },
   "params": {
-    "cacheID": "547607e58c9ccb4c5aa874863fbb9f79",
+    "cacheID": "85d14a07fe20dac9eb1e33bf38643ce2",
     "id": null,
     "metadata": {},
-    "name": "HomeScreenQuery",
+    "name": "HabitsQuery",
     "operationKind": "query",
-    "text": "query HomeScreenQuery(\n  $timezone: String!\n) {\n  habits(timezone: $timezone) {\n    id\n    title\n    description\n    time\n    priority\n    streak\n  }\n}\n"
+    "text": "query HabitsQuery(\n  $timezone: String!\n) {\n  habits(timezone: $timezone) {\n    id\n    title\n    description\n    time\n    priority\n    streak\n  }\n}\n"
   }
 };
 })();
 
-(node as any).hash = "3fe68da72294b9a98ddbf45682b4217a";
+(node as any).hash = "0950d13a19aa224568c0a0b1cd787de9";
 
 export default node;

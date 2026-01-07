@@ -12,7 +12,7 @@ import { memo, useCallback, useMemo, useState } from 'react'
 import { Keyboard, TouchableWithoutFeedback } from 'react-native'
 import { useMutation, useRelayEnvironment } from 'react-relay'
 import { fetchQuery, graphql } from 'relay-runtime'
-import { HabitsQuery } from '../HomeScreen/HomeScreen'
+import { HabitsQuery } from '../HomeScreen/HabitsQuery'
 
 const WEEKDAYS = [
   { label: 'Su', value: 0 },
